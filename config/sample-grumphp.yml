@@ -1,0 +1,34 @@
+grumphp:
+  environment:
+    variables:
+      GRUMPHP_GIT_REPOSITORY_DIR: "/home/wwwroot/.git"
+      GRUMPHP_PROJECT_DIR: "/home/wwwroot/app"
+      GRUMPHP_COMPOSER_DIR: "/root/.composer"
+      GRUMPHP_BIN_DIR: "/root/.composer/vendor/bin"
+  git_hook_variables:
+    EXEC_GRUMPHP_COMMAND: ['docker-compose', 'run', '--rm', 'phpcli']
+    ENV:
+      COMMIT_MSG_FILE: '/home/wwwroot/.git/COMMIT_EDITMSG'
+  tasks:
+    git_commit_message:
+      allow_empty_message: false
+      enforce_capitalized_subject: false
+      enforce_no_subject_punctuations: false
+      enforce_no_subject_trailing_period: true
+      enforce_single_lined_subject: true
+      type_scope_conventions: [ ]
+      max_body_width: 72
+      max_subject_width: 60
+#      matchers:
+#        Must contain WESDC issue number: /WEGDC-([0-9]*)/
+      case_insensitive: true
+      multiline: true
+      additional_modifiers: ''
+    phplint: ~
+    phpcsfixer:
+      config: '/home/wwwroot/app/.php-cs-fixer.dist.php'
+    jsonlint: ~
+    yamllint: ~
+#    twigcs: ~
+
+

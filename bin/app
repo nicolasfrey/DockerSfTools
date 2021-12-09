@@ -1,0 +1,403 @@
+#!/usr/bin/env bash
+
+#################################################
+# Commandline utility that make Docker usage easy
+# v1.0  - 14/10/2019 (nf) - Version initiale
+# v1.1  - 14/11/2019 (nf) - Ajout doc
+# v1.2  - 02/12/2019 (nf) - Add PHP CS Fixer
+# v1.3  - 31/12/2019 (nf) - Add update method
+# v1.4  - 25/02/2020 (nf) - Add git pre-commit hook
+# v1.5  - 24/04/2020 (nf) - Update phpfpm to phpcli. Add IS_WEB option.
+# v1.6  - 27/08/2020 (nf) - Update doc phpcsf
+# v1.7  - 28/08/2020 (nf) - Update PHPUnit function
+# v1.8  - 30/12/2020 (nf) - Add user:group in docker command + update with WSL2
+# v1.9  - 30/03/2021 (nf) - Change user to docker
+# v1.10 - 16/04/2021 (nf) - Add dbload and fileload
+# v1.11 - 15/07/2021 (nf) - Fix regex database
+# v1.12 - 02/08/2021 (jd) - Fix function is_web
+# v1.13 - 01/09/2021 (nf) - Ajout nettoyage pour npm
+# v1.14 - 01/09/2021 (nf) - Correction bug + suppression githook
+# v1.15 - 21/10/2021 (al) - Ajout de grumphp
+# v1.16 - 12/11/2021 (nf) - Fix / Global enhancement / Add isDosFile
+#################################################
+
+# init project
+init () {
+   # Docker recreate
+   docker-compose up -d --force-recreate
+
+   # Update()
+   echo ""
+   update
+   echo ""
+
+   echo -e "\e[41m"
+   echo -e "\nPlease, add line \"127.0.0.1 ${APP__HTTP_URL}\" in your hosts file to access http://${APP__HTTP_URL}"
+   echo -e "\e[49m"
+}
+
+# update project
+update () {
+   echo "----> Converting file to Unix format"
+   dos2unix app/bin/*
+   dos2unix app/.env*
+   echo "  [OK] Converting file to Unix format"
+
+   echo "----> Set executable"
+   chmod u+x bin/* app/bin/*
+   echo "  [OK] Set executable"
+
+   echo "----> Add githooks"
+   githooks
+   echo "  [OK] githooks added"
+
+   echo "----> Install dependency"
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli composer install
+   echo "  [OK] Dependency installed"
+
+   echo ""
+
+   echo "----> Initialize database"
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:drop --full-database --force
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:database:create --if-not-exists
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:update --force
+   echo "  [OK] Database initialized"
+
+   echo ""
+
+   if isWeb
+   then
+       echo "----> Create directory"
+       docker-compose run --rm -u "$USER":"$GROUP" phpcli mkdir -p public/upload
+       docker-compose run --rm -u "$USER":"$GROUP" phpcli chmod 777 public/upload -R
+       echo "  [OK] Directories created"
+       echo ""
+   fi
+
+   echo "----> Load fixture"
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:fixtures:load -n --purge-with-truncate
+   echo "  [OK] Fixture loaded"
+}
+
+# remove containers, volumes and local images for this project
+destroy () {
+   if isWeb
+   then
+       echo "----> Remove directory"
+       docker-compose run --rm -u "$USER":"$GROUP" phpcli rm -rf public/upload public/build vendor node_modules var bin/.phpunit
+       rm -f .docker/oracle/init/.cache
+       echo "  [OK] Directories removed"
+       echo ""
+   fi
+
+   echo "----> Remove docker images"
+   docker-compose down -v --rmi local
+   echo "  [OK] Docker images removed"
+}
+
+# Install git hooks
+githooks () {
+  echo "----> Install Git Hooks"
+
+  if [ -e .git/hooks/pre-commit ];
+  then
+      PRE_COMMIT_EXISTS=1
+  else
+      PRE_COMMIT_EXISTS=0
+  fi
+
+  if [ -e .git/hooks/commit-msg ];
+  then
+      COMMIT_MSG_EXISTS=1
+  else
+      COMMIT_MSG_EXISTS=0
+  fi
+
+  cp app/vendor/welcoop/weltools/config/pre-commit .git/hooks/pre-commit; chmod +x .git/hooks/pre-commit; dos2unix .git/hooks/pre-commit
+  cp app/vendor/welcoop/weltools/config/commit-msg .git/hooks/commit-msg; chmod +x .git/hooks/commit-msg; dos2unix .git/hooks/commit-msg
+
+  if [ "$PRE_COMMIT_EXISTS" = 0 ];
+  then
+      echo "Pre-commit git hook is installed!"
+  else
+      echo "Pre-commit git hook is updated!"
+  fi
+
+  if [ "$COMMIT_MSG_EXISTS" = 0 ];
+  then
+      echo "Commit-msg git hook is installed!"
+  else
+      echo "Commit-msg git hook is updated!"
+  fi
+
+   echo "  [OK] Install Git Hooks"
+}
+
+
+# start docker
+start () {
+    docker-compose up -d
+}
+
+
+# stop docker
+stop () {
+    docker-compose stop
+}
+
+
+# restart docker
+restart () {
+    docker-compose stop
+    docker-compose up -d
+}
+
+
+# run Composer inside the app container
+composer () {
+    declare ARGS=$*
+    docker-compose run --rm -u "$USER":"$GROUP" phpcli composer ${ARGS}
+}
+
+
+# run the Symfony console inside the app container
+console () {
+    declare ARGS=$*
+    docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console ${ARGS}
+}
+
+
+# run bash
+bash () {
+    docker-compose run --rm -u "$USER":"$GROUP" phpcli bash
+}
+
+
+# exec a php command into app container
+php () {
+    declare ARGS=$*
+    docker-compose run --rm -u "$USER":"$GROUP" phpcli php ${ARGS}
+}
+
+
+# run phpUnit
+phpunit () {
+   declare ARGS=$*
+
+   if [[ ${ARGS} == *"--coverage"* ]]; then
+      docker-compose run --rm -u "$USER":"$GROUP" phpcli phpdbg -qrr ./bin/phpunit "${ARGS/--coverage/}"
+   else
+      docker-compose run --rm -u "$USER":"$GROUP" phpcli ./bin/phpunit --no-coverage ${ARGS}
+   fi
+}
+
+# run php-cs-fixer
+grumphp () {
+   declare ARGS="$*"
+
+   if [[ -z $1 ]]; then
+      docker-compose run --rm phpcli grumphp --config=../grumphp.yml run
+   else
+      docker-compose run --rm phpcli grumphp --config=../grumphp.yml run -v ${ARGS}
+   fi
+}
+
+
+# run Update schema and reload fixture
+dbreload () {
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli rm -rf public/upload
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli mkdir -p public/upload
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli chmod 777 public/upload -R
+
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:drop --full-database --force
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:update --force
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:fixtures:load -n --purge-with-truncate
+}
+
+dbload () {
+   declare SOURCE=$1
+
+   if [[ -z "${SOURCE}" ]]; then
+      usage
+      exit 0
+   fi
+
+   if [[ ! ${SOURCE} =~ ^PROD|STAGING$ ]]; then
+      echo "${SOURCE} must be PROD or STAGING"
+      exit 1
+   fi
+
+   DATABASE="APP_${SOURCE}__DATABASE_URL"
+
+   pattern='^(pgsql):\/\/(.*):(.*)@(.*):([0-9]*)\/([a-zA-Z0-9_\-]*)[\s]*$'
+   if [[ ${!DATABASE} =~ $pattern ]]; then
+      DB_PROTOCOL=${BASH_REMATCH[1]}
+      DB_USER=${BASH_REMATCH[2]}
+      DB_PASSWORD=${BASH_REMATCH[3]}
+      DB_HOST=${BASH_REMATCH[4]}
+      DB_PORT=${BASH_REMATCH[5]}
+      DB_DBNAME=${BASH_REMATCH[6]}
+   fi
+
+   if [[ -z "${DB_PROTOCOL}" ]] || [[ -z "${DB_HOST}" ]] || [[ -z "${DB_DBNAME}" ]] ; then
+      echo "You must have host and DB name !"
+      exit 1
+   fi
+
+   CURRENT_USER=$(id -u -n)
+   BACKUP_FILE="dump_$(date '+%Y%m%d%H%M').sql.backup"
+
+   echo "----> Backup ${SOURCE} database"
+   ssh "${CURRENT_USER}@${DB_HOST}" PGPASSWORD="${DB_PASSWORD}" pg_dump --compress=9 --verbose --format=c --host=localhost --username="${DB_USER}" --dbname="${DB_DBNAME}" > ".docker/postgres/backup/${BACKUP_FILE}"
+   echo " [OK] Backup ${SOURCE} database"
+   echo ""
+
+   echo "----> Restore database to localhost"
+   docker-compose exec postgres pg_restore --format=c --verbose --clean --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${BACKUP_FILE}
+   echo " [OK] Restore database to localhost"
+   echo ""
+
+   echo "----> Remove backup file"
+   rm -v ".docker/postgres/backup/${BACKUP_FILE}"
+   echo " [OK] Remove backup file"
+}
+
+fileload () {
+   declare SOURCE=$1
+
+   if [[ -z "${SOURCE}" ]]; then
+      usage
+      exit 0
+   fi
+
+   if [[ ! ${SOURCE} =~ ^PROD|STAGING$ ]]; then
+      echo "${SOURCE} must be PROD or STAGING"
+      exit 1
+   fi
+
+   UPLOAD_DIR="APP_${SOURCE}__UPLOAD_DIR"
+   SERVER_IP="APP_${SOURCE}__SERVER_IP"
+   SRC_PATH="APP_${SOURCE}__SRC_PATH"
+   CURRENT_USER=$(id -u -n)
+
+   echo "----> Rsync ${!UPLOAD_DIR} directory"
+   rsync -av "deploy@${!SERVER_IP}:${!SRC_PATH}/current/${APP__SYMFONY_APP_PATH}/public/upload/*" "./${APP__SYMFONY_APP_PATH}/public/upload/"
+   echo " [OK] Rsync ${!UPLOAD_DIR} directory"
+   echo ""
+}
+
+# Return symfony logs
+sflogs () {
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bash -c "tail -f var/log/dev.log"
+}
+
+
+# tests
+tests () {
+   echo "${APP_PROD__DATABASE_URL}"
+   echo "${APP_STAGING__DATABASE_URL}"
+   echo "${APP_STAGING__SRC_PATH}"
+
+   echo "${APP__PSQL_DATABASE}"
+   echo "${APP__PSQL_PGDATA}"
+   echo "${APP__SYMFONY_APP_PATH}"
+   echo "${APP__SYMFONY_LOGS_PATH}"
+}
+
+
+usage () {
+    echo "usage: bin/app COMMAND [ARGUMENTS]
+
+    init                    Initialize project
+    update                  Update current project (Reload db, launch composer install)
+    destroy                 Remove all the project Docker containers with their volumes
+
+    start                   Start project
+    stop                    Stop project
+    restart                 Restart project
+
+    composer                Use Composer inside the app container
+    console                 Use the Symfony console
+    bash                    Use bash inside the app container
+    php                     Executes a php command inside the app container
+
+    phpunit                 Executes a phpUnit Tests. Add --coverage for coverage support
+    grumphp                 Executes multiple tasks
+
+    dbreload                Update schema and reload fixture
+    dbload <PROD|STAGING>   Load choose environment DB into localhost
+    fileload <PROD|STAGING> Load choose environment public files into local
+
+    sflogs                Return sf logs.
+
+    tests                 Tests command
+    "
+}
+
+# .env loading in the shell
+dotenv () {
+   # Ajout d'un prefix APP__ sur les variables, sinon, on a un conflit avec docker
+   if [[ -f .env ]]; then
+      eval $(grep -v -e "^#" .env | sed "/^$/d" | xargs -I {} echo export \'APP__{}\')
+   fi
+
+   if [[ -f .env.local ]]; then
+      eval $(grep -v -e "^#" .env.local | sed "/^$/d" | xargs -I {} echo export \'APP__{}\')
+   fi
+
+   if isDosFile "${APP__SYMFONY_APP_PATH}/.env" || isDosFile "${APP__SYMFONY_APP_PATH}/.env.staging" || isDosFile "${APP__SYMFONY_APP_PATH}/.env.prod" || isDosFile ".env"; then
+        echo -e "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!!!!!! Check line separator configuration !!!!!!!\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        exit 1
+   fi
+
+   # Lecture .env.prod si trouvé
+   if [[ -f ${APP__SYMFONY_APP_PATH}/.env.prod ]]; then
+      eval $(grep -P -e "^(DATABASE_URL|UPLOAD_DIR|SERVER_IP|SRC_PATH)" ${APP__SYMFONY_APP_PATH}/.env.prod | xargs -I {} echo export \'APP_PROD__{}\')
+   fi
+
+   # Lecture .env.staging si trouvé
+   if [[ -f ${APP__SYMFONY_APP_PATH}/.env.staging ]]; then
+      eval $(grep -P -e "^(DATABASE_URL|UPLOAD_DIR|SERVER_IP|SRC_PATH)" ${APP__SYMFONY_APP_PATH}/.env.staging | xargs -I {} echo export \'APP_STAGING__{}\')
+   fi
+}
+
+isDosFile() {
+    if [[ -f $1 ]]; then
+       [[ $(dos2unix < $1 | cmp - $1 | wc -c) -gt 0 ]]
+    fi
+}
+
+isWeb () {
+  APP__IS_WEB="${APP__HTTP_URL//[$'\t\r\n ']}"
+
+  if [[ -z ${APP__IS_WEB} ]]
+  then
+    return 1
+  else
+    return 0
+  fi
+}
+
+main () {
+   if [[ -z $1 ]]; then
+      usage
+      exit 0
+   fi
+
+   if [[ ! $1 =~ ^(init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|dbload|fileload|dbreload|sflogs|tests|grumphp)$ ]]; then
+      echo "$1 is not a supported command"
+      exit 1
+   fi
+
+   # Run dotenv
+   dotenv
+
+   # Get current user/group
+   USER='docker'
+   GROUP='docker'
+
+   # Run command
+   "$@"
+}
+
+main "$@"

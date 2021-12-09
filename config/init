@@ -1,0 +1,33 @@
+#!/usr/bin/bash
+
+main () {
+   if [[ $1 =~ ^(self-update)$ ]]; then
+        selfUpdate
+   elif [[ $1 =~ ^(vendor)$ ]]; then
+        vendor
+        exit 1
+   elif [[ ! -f app/vendor/bin/app ]]; then
+        vendor
+   fi
+
+   app/vendor/bin/app "$@"
+}
+
+vendor()
+{
+  docker-compose run --rm -u docker:docker phpcli bash -c "
+     [ -f composer.json ] || composer init &&
+     composer config repositories.nfrey vcs https://github.com/nicolasfrey/DockerSfTools.git &&
+     composer require nicolasfrey/docker-sf-tools \"^1.0\" &&
+     [ -f ../grumphp.yml ] || cp vendor/nicolasfrey/docker-sf-tools/config/sample-grumphp.yml ../grumphp.yml
+     [ -f .php-cs-fixer.dist.php ] || cp vendor/nicolasfrey/docker-sf-tools/config/sample-cs-fixer.php .php-cs-fixer.dist.php
+  "
+}
+
+selfUpdate()
+{
+  curl --create-dirs -o bin/app -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/master/config/init && chmod +x bin/app
+  exit 1
+}
+
+main "$@"
