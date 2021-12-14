@@ -1,26 +1,5 @@
 #!/usr/bin/env bash
 
-#################################################
-# Commandline utility that make Docker usage easy
-# v1.0  - 14/10/2019 (nf) - Version initiale
-# v1.1  - 14/11/2019 (nf) - Ajout doc
-# v1.2  - 02/12/2019 (nf) - Add PHP CS Fixer
-# v1.3  - 31/12/2019 (nf) - Add update method
-# v1.4  - 25/02/2020 (nf) - Add git pre-commit hook
-# v1.5  - 24/04/2020 (nf) - Update phpfpm to phpcli. Add IS_WEB option.
-# v1.6  - 27/08/2020 (nf) - Update doc phpcsf
-# v1.7  - 28/08/2020 (nf) - Update PHPUnit function
-# v1.8  - 30/12/2020 (nf) - Add user:group in docker command + update with WSL2
-# v1.9  - 30/03/2021 (nf) - Change user to docker
-# v1.10 - 16/04/2021 (nf) - Add dbload and fileload
-# v1.11 - 15/07/2021 (nf) - Fix regex database
-# v1.12 - 02/08/2021 (jd) - Fix function is_web
-# v1.13 - 01/09/2021 (nf) - Ajout nettoyage pour npm
-# v1.14 - 01/09/2021 (nf) - Correction bug + suppression githook
-# v1.15 - 21/10/2021 (al) - Ajout de grumphp
-# v1.16 - 12/11/2021 (nf) - Fix / Global enhancement / Add isDosFile
-#################################################
-
 # init project
 init () {
    # Docker recreate
@@ -286,6 +265,23 @@ fileload () {
    echo ""
 }
 
+backup () {
+   gzfile=$(echo `date '+%Y%m%d%H%M'`.backup.gz)
+
+   docker-compose exec postgres bash -c "PGPASSWORD="${APP__PSQL_PASSWORD}" pg_dump --compress=9 --verbose --format=c --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" > /var/backup/${gzfile}"
+}
+
+restore () {
+   declare FILENAME=$1
+
+   if [[ -z "${FILENAME}" ]]; then
+      docker-compose exec postgres bash -c "find ./var/backup -name *.backup.gz  -printf '%f\n'"
+      exit 0
+   fi
+
+   docker-compose exec postgres pg_restore --format=c --verbose --clean --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${FILENAME}
+}
+
 # Return symfony logs
 sflogs () {
    docker-compose run --rm -u "$USER":"$GROUP" phpcli bash -c "tail -f var/log/dev.log"
@@ -328,9 +324,12 @@ usage () {
     dbload <PROD|STAGING>   Load choose environment DB into localhost
     fileload <PROD|STAGING> Load choose environment public files into local
 
-    sflogs                Return sf logs.
+    backup                  Backup database in .docker/postgres/YmdHi.backup.gz
+    restore <filename>      Restore database
 
-    tests                 Tests command
+    sflogs                  Return sf logs.
+
+    tests                   Tests command
     "
 }
 
@@ -384,7 +383,7 @@ main () {
       exit 0
    fi
 
-   if [[ ! $1 =~ ^(init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|dbload|fileload|dbreload|sflogs|tests|grumphp)$ ]]; then
+   if [[ ! $1 =~ ^(init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|backup|restore|dbload|fileload|dbreload|sflogs|tests|grumphp)$ ]]; then
       echo "$1 is not a supported command"
       exit 1
    fi
