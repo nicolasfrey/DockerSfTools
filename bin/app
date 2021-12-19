@@ -274,17 +274,22 @@ backup () {
 restore () {
    declare FILENAME=$1
 
-   if [[ -z "${FILENAME}" ]]; then
+   if [[ "${FILENAME}" == 'latest' ]]; then
+      FILENAME=$(docker-compose exec postgres bash -c "find ./var/backup -name *.backup.gz  -printf '%f\n' | sort -n | tail -n 1 | tr -dc '[[:print:]]'")
+   fi
+
+   if [[ -z ${FILENAME} ]]; then
       docker-compose exec postgres bash -c "find ./var/backup -name *.backup.gz  -printf '%f\n'"
       exit 0
    fi
 
+   echo "Restore \"${FILENAME}\" backup"
    docker-compose exec postgres pg_restore --format=c --verbose --clean --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${FILENAME}
 }
 
 # Return symfony logs
 sflogs () {
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bash -c "tail -f var/log/dev.log"
+   docker-compose exec -it -u "$USER":"$GROUP" phpfpm bash -c "tail -f var/log/dev.log"
 }
 
 
@@ -304,32 +309,32 @@ tests () {
 usage () {
     echo "usage: bin/app COMMAND [ARGUMENTS]
 
-    init                    Initialize project
-    update                  Update current project (Reload db, launch composer install)
-    destroy                 Remove all the project Docker containers with their volumes
+    init                         Initialize project
+    update                       Update current project (Reload db, launch composer install)
+    destroy                      Remove all the project Docker containers with their volumes
 
-    start                   Start project
-    stop                    Stop project
-    restart                 Restart project
+    start                        Start project
+    stop                         Stop project
+    restart                      Restart project
 
-    composer                Use Composer inside the app container
-    console                 Use the Symfony console
-    bash                    Use bash inside the app container
-    php                     Executes a php command inside the app container
+    composer                     Use Composer inside the app container
+    console                      Use the Symfony console
+    bash                         Use bash inside the app container
+    php                          Executes a php command inside the app container
 
-    phpunit                 Executes a phpUnit Tests. Add --coverage for coverage support
-    grumphp                 Executes multiple tasks
+    phpunit                      Executes a phpUnit Tests. Add --coverage for coverage support
+    grumphp                      Executes multiple tasks
 
-    dbreload                Update schema and reload fixture
-    dbload <PROD|STAGING>   Load choose environment DB into localhost
-    fileload <PROD|STAGING> Load choose environment public files into local
+    dbreload                     Update schema and reload fixture
+    dbload <PROD|STAGING>        Load choose environment DB into localhost
+    fileload <PROD|STAGING>      Load choose environment public files into local
 
-    backup                  Backup database in .docker/postgres/YmdHi.backup.gz
-    restore <filename>      Restore database
+    backup                       Backup database in .docker/postgres/YmdHi.backup.gz
+    restore <filename|latest>    Restore database
 
-    sflogs                  Return sf logs.
-
-    tests                   Tests command
+    sflogs                       Return sf logs.
+   
+    tests                        Tests command
     "
 }
 
