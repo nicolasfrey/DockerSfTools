@@ -3,8 +3,8 @@
 main () {
    if [[ $1 =~ ^(self-update)$ ]]; then
         selfUpdate
-   elif [[ $1 =~ ^(vendor)$ ]]; then
-        vendor
+   elif [[ $1 =~ ^(install)$ ]]; then
+        install
         exit 1
    elif [[ ! -f app/vendor/bin/app ]]; then
         vendor
@@ -13,12 +13,13 @@ main () {
    app/vendor/bin/app "$@"
 }
 
-vendor()
+install()
 {
   docker-compose run --rm -u docker:docker phpcli bash -c "
      [ -f composer.json ] || composer init &&
      composer config repositories.nfrey vcs https://github.com/nicolasfrey/DockerSfTools.git &&
-     composer require nicolasfrey/docker-sf-tools \"^1.0\" &&
+     composer require --no-update nicolasfrey/docker-sf-tools \"^1.0\" &&
+     composer update nicolasfrey/docker-sf-tools &&
      [ -f ../grumphp.yml ] || cp vendor/nicolasfrey/docker-sf-tools/config/sample-grumphp.yml ../grumphp.yml
      [ -f .php-cs-fixer.dist.php ] || cp vendor/nicolasfrey/docker-sf-tools/config/sample-cs-fixer.php .php-cs-fixer.dist.php
   "

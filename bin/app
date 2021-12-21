@@ -92,8 +92,10 @@ githooks () {
       COMMIT_MSG_EXISTS=0
   fi
 
-  cp app/vendor/welcoop/weltools/config/pre-commit .git/hooks/pre-commit; chmod +x .git/hooks/pre-commit; dos2unix .git/hooks/pre-commit
-  cp app/vendor/welcoop/weltools/config/commit-msg .git/hooks/commit-msg; chmod +x .git/hooks/commit-msg; dos2unix .git/hooks/commit-msg
+  cp -f app/vendor/nicolasfrey/docker-sf-tools/config/pre-commit .git/hooks/pre-commit;
+  cp -f app/vendor/nicolasfrey/docker-sf-tools/config/commit-msg .git/hooks/commit-msg;
+  chmod +x .git/hooks/*;
+  dos2unix .git/hooks/*
 
   if [ "$PRE_COMMIT_EXISTS" = 0 ];
   then
@@ -176,6 +178,8 @@ grumphp () {
 
    if [[ -z $1 ]]; then
       docker-compose run --rm phpcli grumphp --config=../grumphp.yml run
+   elif [ $1 == 'init' ]; then
+       githooks
    else
       docker-compose run --rm phpcli grumphp --config=../grumphp.yml run -v ${ARGS}
    fi
@@ -323,7 +327,7 @@ usage () {
     php                          Executes a php command inside the app container
 
     phpunit                      Executes a phpUnit Tests. Add --coverage for coverage support
-    grumphp                      Executes multiple tasks
+    grumphp <init|run...>        Executes multiple tasks
 
     dbreload                     Update schema and reload fixture
     dbload <PROD|STAGING>        Load choose environment DB into localhost

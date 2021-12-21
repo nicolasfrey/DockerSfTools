@@ -20,7 +20,7 @@ grumphp:
       max_body_width: 72
       max_subject_width: 60
 #      matchers:
-#        Must contain WESDC issue number: /WEGDC-([0-9]*)/
+#        Must contain JIRA issue number: /JIRA-([0-9]*)/
       case_insensitive: true
       multiline: true
       additional_modifiers: ''
