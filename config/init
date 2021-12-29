@@ -7,7 +7,7 @@ main () {
         install
         exit 1
    elif [[ ! -f app/vendor/bin/app ]]; then
-        vendor
+        install
    fi
 
    app/vendor/bin/app "$@"
