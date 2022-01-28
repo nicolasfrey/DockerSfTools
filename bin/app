@@ -4,8 +4,15 @@
 version () {
    VERSION='2.0.0'
    echo ""
-   echo "\e[34mbin/app\e[49m version \e[33m${VERSION}\e[49m"
+   echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
+}
+
+selfupdate()
+{
+  curl --create-dirs -o bin/app -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/master/config/init
+  chmod +x bin/app
+  bin/app version
 }
 
 # init project
@@ -297,12 +304,6 @@ restore () {
 
    echo "Restore \"${FILENAME}\" backup"
    docker-compose exec postgres pg_restore --format=c --verbose --clean --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${FILENAME}
-}
-
-selfUpdate()
-{
-  curl --create-dirs -o bin/app -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/master/config/init && chmod +x bin/app
-  bin/app version
 }
 
 # Return symfony logs
