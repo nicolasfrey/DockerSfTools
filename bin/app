@@ -2,9 +2,9 @@
 
 # Version
 version () {
-   echo "2.0.0"
+   VERSION='2.0.0'
    echo ""
-   echo "Remove composer and add selfupdate"
+   echo "\e[34mbin/app\e[49m version \e[33m${VERSION}\e[49m"
    echo ""
 }
 
