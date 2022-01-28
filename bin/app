@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+# Version
+version () {
+   echo "2.0.0"
+   echo ""
+   echo "Remove composer and add selfupdate"
+   echo ""
+}
+
 # init project
 init () {
    # Docker recreate
@@ -291,6 +299,12 @@ restore () {
    docker-compose exec postgres pg_restore --format=c --verbose --clean --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${FILENAME}
 }
 
+selfUpdate()
+{
+  curl --create-dirs -o bin/app -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/master/config/init && chmod +x bin/app
+  bin/app version
+}
+
 # Return symfony logs
 sflogs () {
    docker-compose exec -it -u "$USER":"$GROUP" phpfpm bash -c "tail -f var/log/dev.log"
@@ -312,6 +326,8 @@ tests () {
 
 usage () {
     echo "usage: bin/app COMMAND [ARGUMENTS]
+
+    selfupdate                   Updates bin/app to the latest version.
 
     init                         Initialize project
     update                       Update current project (Reload db, launch composer install)
@@ -392,7 +408,7 @@ main () {
       exit 0
    fi
 
-   if [[ ! $1 =~ ^(init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|backup|restore|dbload|fileload|dbreload|sflogs|tests|grumphp)$ ]]; then
+   if [[ ! $1 =~ ^(version|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|backup|restore|dbload|fileload|dbreload|sflogs|tests|grumphp|selfupdate)$ ]]; then
       echo "$1 is not a supported command"
       exit 1
    fi
