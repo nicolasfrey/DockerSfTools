@@ -41,14 +41,14 @@ init () {
 # update project
 update () {
    echo "----> Converting file to Unix format"
-   ls -1 app/bin/* app/.env*
+   ls -d -1 app/bin/* app/.env*
    dos2unix -q app/bin/* app/.env*
    echo " [OK] Converting file to Unix format"
 
    echo ""
 
    echo "----> Set executable"
-   ls -1 bin/* app/bin/*
+   ls -d -1 bin/* app/bin/*
    chmod u+x bin/* app/bin/*
    echo " [OK] Set executable"
 
