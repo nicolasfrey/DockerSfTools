@@ -10,139 +10,144 @@ version () {
    echo ""
 }
 
-selfupdate()
-{
+selfupdate () {
   curl --create-dirs -o bin/app -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/bin/app
   chmod +x bin/app
   bin/app version
 }
 
+displayError () {
+   echo -e "\e[41m"
+   echo -e "\n  An error occured !!! Please, check your command history. "
+   echo -e "\e[49m"
+   exit
+}
+
 # init project
 init () {
    # Docker recreate
-   docker-compose up -d --force-recreate
+   docker-compose up -d --force-recreate || displayError
 
    # Update()
    echo ""
    update
    echo ""
 
-   echo -e "\e[41m"
-   echo -e "\nPlease, add line \"127.0.0.1 ${APP__HTTP_URL}\" in your hosts file to access http://${APP__HTTP_URL}"
-   echo -e "\e[49m"
+   echo -e "\e[44m\e[30m"
+   echo -e "\n  Please, add line \"127.0.0.1 ${APP__HTTP_URL}\" in your hosts file to access http://${APP__HTTP_URL}  "
+   echo -e "\e[49m\e[39m"
 }
 
 # update project
 update () {
    echo "----> Converting file to Unix format"
-   dos2unix app/bin/*
-   dos2unix app/.env*
-   echo "  [OK] Converting file to Unix format"
+   ls -1 app/bin/* app/.env*
+   dos2unix -q app/bin/* app/.env*
+   echo " [OK] Converting file to Unix format"
+
+   echo ""
 
    echo "----> Set executable"
+   ls -1 bin/* app/bin/*
    chmod u+x bin/* app/bin/*
-   echo "  [OK] Set executable"
+   echo " [OK] Set executable"
+
+   echo ""
 
    echo "----> Add githooks"
    githooks
-   echo "  [OK] githooks added"
+   echo " [OK] Githooks added"
+
+   echo ""
+
+   echo "----> Add default config"
+   config
+   echo " [OK] Default config added"
+
+   echo ""
 
    echo "----> Install dependency"
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli composer install
-   echo "  [OK] Dependency installed"
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli composer install || displayError
+   echo " [OK] Dependency installed"
 
    echo ""
 
    echo "----> Initialize database"
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:drop --full-database --force
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:database:create --if-not-exists
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:update --force
-   echo "  [OK] Database initialized"
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:drop --full-database --force || displayError
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:database:create --if-not-exists || displayError
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:update --force || displayError
+   echo " [OK] Database initialized"
 
    echo ""
 
-   if isWeb
-   then
+   if isWeb; then
        echo "----> Create directory"
-       docker-compose run --rm -u "$USER":"$GROUP" phpcli mkdir -p public/upload
-       docker-compose run --rm -u "$USER":"$GROUP" phpcli chmod 777 public/upload -R
-       echo "  [OK] Directories created"
+       docker-compose run --rm -u "$USER":"$GROUP" phpcli bash -c "
+            mkdir -p public/upload &&
+            chmod 777 public/upload -R
+         " || displayError
+       echo " [OK] Directories created"
        echo ""
    fi
 
    echo "----> Load fixture"
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:fixtures:load -n --purge-with-truncate
-   echo "  [OK] Fixture loaded"
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:fixtures:load -n --purge-with-truncate  || displayError
+   echo " [OK] Fixture loaded"
 }
 
 # remove containers, volumes and local images for this project
 destroy () {
-   if isWeb
-   then
+   if isWeb; then
        echo "----> Remove directory"
        docker-compose run --rm -u "$USER":"$GROUP" phpcli rm -rf public/upload public/build vendor node_modules var bin/.phpunit
        rm -f .docker/oracle/init/.cache
-       echo "  [OK] Directories removed"
+       echo " [OK] Directories removed"
        echo ""
    fi
 
-   echo "----> Remove docker images"
+   echo "----> Stop and remove docker images"
    docker-compose down -v --rmi local
-   echo "  [OK] Docker images removed"
+   echo " [OK] Docker images removed"
 }
 
 # Install git hooks
 githooks () {
-  echo "----> Install Git Hooks"
+  PRE_COMMIT_EXISTS=$([ -e .git/hooks/pre-commit ] && echo 1 || echo 0)
+  COMMIT_MSG_EXISTS=$([ -e .git/hooks/commit-msg ] && echo 1 || echo 0)
 
-  if [ -e .git/hooks/pre-commit ];
-  then
-      PRE_COMMIT_EXISTS=1
-  else
-      PRE_COMMIT_EXISTS=0
-  fi
-
-  if [ -e .git/hooks/commit-msg ];
-  then
-      COMMIT_MSG_EXISTS=1
-  else
-      COMMIT_MSG_EXISTS=0
-  fi
-
-  cp -f app/vendor/nicolasfrey/docker-sf-tools/config/pre-commit .git/hooks/pre-commit;
-  cp -f app/vendor/nicolasfrey/docker-sf-tools/config/commit-msg .git/hooks/commit-msg;
+  curl -s -o .git/hooks/pre-commit -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/pre-commit
+  curl -s -o .git/hooks/commit-msg -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/commit-msg
   chmod +x .git/hooks/*;
-  dos2unix .git/hooks/*
+  dos2unix -q .git/hooks/*
 
-  if [ "$PRE_COMMIT_EXISTS" = 0 ];
-  then
+  if [ "$PRE_COMMIT_EXISTS" = 0 ]; then
       echo "Pre-commit git hook is installed!"
   else
       echo "Pre-commit git hook is updated!"
   fi
 
-  if [ "$COMMIT_MSG_EXISTS" = 0 ];
-  then
+  if [ "$COMMIT_MSG_EXISTS" = 0 ]; then
       echo "Commit-msg git hook is installed!"
   else
       echo "Commit-msg git hook is updated!"
   fi
-
-   echo "  [OK] Install Git Hooks"
 }
 
+# Initialize config
+config () {
+  [ -f ../grumphp.yml ] || curl -s -o grumphp.yml -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/sample-grumphp.yml
+  [ -f .php-cs-fixer.dist.php ] || curl -s -o app/.php-cs-fixer.dist.php -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/sample-cs-fixer.php
+}
 
 # start docker
 start () {
     docker-compose up -d
 }
 
-
 # stop docker
 stop () {
     docker-compose stop
 }
-
 
 # restart docker
 restart () {
@@ -150,13 +155,11 @@ restart () {
     docker-compose up -d
 }
 
-
 # run Composer inside the app container
 composer () {
     declare ARGS=$*
     docker-compose run --rm -u "$USER":"$GROUP" phpcli composer ${ARGS}
 }
-
 
 # run the Symfony console inside the app container
 console () {
@@ -164,19 +167,16 @@ console () {
     docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console ${ARGS}
 }
 
-
 # run bash
 bash () {
     docker-compose run --rm -u "$USER":"$GROUP" phpcli bash
 }
-
 
 # exec a php command into app container
 php () {
     declare ARGS=$*
     docker-compose run --rm -u "$USER":"$GROUP" phpcli php ${ARGS}
 }
-
 
 # run phpUnit
 phpunit () {
@@ -201,7 +201,6 @@ grumphp () {
       docker-compose run --rm phpcli grumphp --config=../grumphp.yml run -v ${ARGS}
    fi
 }
-
 
 # run Update schema and reload fixture
 dbreload () {
@@ -284,6 +283,10 @@ fileload () {
    rsync -av "deploy@${!SERVER_IP}:${!SRC_PATH}/current/${APP__SYMFONY_APP_PATH}/public/upload/*" "./${APP__SYMFONY_APP_PATH}/public/upload/"
    echo " [OK] Rsync ${!UPLOAD_DIR} directory"
    echo ""
+
+   echo "----> Change permissions"
+   docker-compose run --rm -u "$USER":"$GROUP" phpcli chmod 777 public/upload -R
+   echo " [OK] Change permissions"
 }
 
 backup () {
@@ -312,20 +315,6 @@ restore () {
 sflogs () {
    docker-compose exec -it -u "$USER":"$GROUP" phpfpm bash -c "tail -f var/log/dev.log"
 }
-
-
-# tests
-tests () {
-   echo "${APP_PROD__DATABASE_URL}"
-   echo "${APP_STAGING__DATABASE_URL}"
-   echo "${APP_STAGING__SRC_PATH}"
-
-   echo "${APP__PSQL_DATABASE}"
-   echo "${APP__PSQL_PGDATA}"
-   echo "${APP__SYMFONY_APP_PATH}"
-   echo "${APP__SYMFONY_LOGS_PATH}"
-}
-
 
 usage () {
     echo "usage: bin/app COMMAND [ARGUMENTS]
@@ -356,8 +345,6 @@ usage () {
     restore <filename|latest>    Restore database
 
     sflogs                       Return sf logs.
-   
-    tests                        Tests command
     "
 }
 
@@ -397,8 +384,7 @@ isDosFile() {
 isWeb () {
   APP__IS_WEB="${APP__HTTP_URL//[$'\t\r\n ']}"
 
-  if [[ -z ${APP__IS_WEB} ]]
-  then
+  if [[ -z ${APP__IS_WEB} ]]; then
     return 1
   else
     return 0
@@ -411,7 +397,7 @@ main () {
       exit 0
    fi
 
-   if [[ ! $1 =~ ^(version|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|backup|restore|dbload|fileload|dbreload|sflogs|tests|grumphp|selfupdate)$ ]]; then
+   if [[ ! $1 =~ ^(version|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|backup|restore|dbload|fileload|dbreload|sflogs|grumphp|selfupdate)$ ]]; then
       echo "$1 is not a supported command"
       exit 1
    fi
