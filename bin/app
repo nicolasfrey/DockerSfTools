@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-BRANCHE='feature/update-2.0.0'
+BRANCHE='master'
 
 # Version
 version () {
