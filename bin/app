@@ -4,14 +4,14 @@ BRANCHE='master'
 
 # Version
 version () {
-   VERSION='2.0.0'
+   VERSION='2.1.0'
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
 }
 
 selfupdate () {
-  curl --create-dirs -s -o bin/app -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/bin/app
+  curl --create-dirs -o bin/app -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/bin/app
   chmod +x bin/app
   bin/app version
 }
@@ -259,6 +259,13 @@ dbload () {
    echo "----> Remove backup file"
    rm -v ".docker/postgres/backup/${BACKUP_FILE}"
    echo " [OK] Remove backup file"
+
+   echo ""
+   echo -e "\e[34mDo you want to execute a migration in database '${DB_DBNAME}' ? (\e[33my/n\e[34m)\e[39m"
+   read -s -n 1
+   if [[ $REPLY =~ ^[Yy]$ ]]; then
+      docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:migrations:migrate -n
+   fi
 }
 
 fileload () {
