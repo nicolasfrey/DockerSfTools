@@ -215,6 +215,7 @@ dbreload () {
 
 dbload () {
    declare SOURCE=$1
+   declare IGNORE=$2
 
    if [[ -z "${SOURCE}" ]]; then
       usage
@@ -224,6 +225,13 @@ dbload () {
    if [[ ! ${SOURCE} =~ ^PROD|STAGING$ ]]; then
       echo "${SOURCE} must be PROD or STAGING"
       exit 1
+   fi
+
+   if [[ -n "${IGNORE}" ]] && [[ ${IGNORE} != '--ignore-excludes' ]]; then
+      echo -e "\e[41m"
+      echo -e "\n Parameter \"${IGNORE}\" is not defined ! \n\n Did you mean one of these? \n    --ignore-excludes"
+      echo -e "\e[49m"
+      exit
    fi
 
    DATABASE="APP_${SOURCE}__DATABASE_URL"
@@ -245,10 +253,43 @@ dbload () {
 
    CURRENT_USER=$(id -u -n)
    BACKUP_FILE="dump_$(date '+%Y%m%d%H%M').sql.backup"
+   STR_EXCLUDE_TABLE_DATA=''
+
+   if [[ "${IGNORE}" != '--ignore-excludes' ]] && [[ "${APP__PSQL_EXCLUDE_TABLE_DATA}" = *[!\ ]* ]]; then
+      EXCLUDE_DATA=$(echo "${APP__PSQL_EXCLUDE_TABLE_DATA}" | tr ",; " "\n")
+
+      for DATA in $EXCLUDE_DATA
+      do
+          STR_EXCLUDE_TABLE_DATA+=" --exclude-table-data ${DATA}"
+      done
+   fi
 
    echo "----> Backup ${SOURCE} database"
-   ssh "${CURRENT_USER}@${DB_HOST}" PGPASSWORD="${DB_PASSWORD}" pg_dump --compress=9 --verbose --format=c --host=localhost --username="${DB_USER}" --dbname="${DB_DBNAME}" > ".docker/postgres/backup/${BACKUP_FILE}"
+   ssh "${CURRENT_USER}@${DB_HOST}" PGPASSWORD="${DB_PASSWORD}" pg_dump "${STR_EXCLUDE_TABLE_DATA}" --compress=9 --verbose --format=c --host=localhost --username="${DB_USER}" --dbname="${DB_DBNAME}" > ".docker/postgres/backup/${BACKUP_FILE}"
    echo " [OK] Backup ${SOURCE} database"
+   echo ""
+
+   echo "----> Clean localhost database"
+
+   SEQUENCES=$(docker-compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(sequence_schema || '.\"' || sequence_name, '\",') FROM information_schema.sequences where sequence_catalog = '${APP__PSQL_DATABASE}'")
+   if [[ "${SEQUENCES}" = *[!\ ]* ]]; then
+      echo "Dropping sequences:${SEQUENCES}"
+      docker-compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP SEQUENCE IF EXISTS ${SEQUENCES} CASCADE"
+   fi
+
+   VIEWS=$(docker-compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(table_schema || '.\"' || table_name || '\"', ',') FROM information_schema.tables where table_catalog = '${APP__PSQL_DATABASE}' AND table_schema not in('pg_catalog', 'information_schema') AND table_type='VIEW'")
+   if [[ "${VIEWS}" = *[!\ ]* ]]; then
+      echo "Dropping views:${VIEWS}"
+      docker-compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP VIEW IF EXISTS ${VIEWS} CASCADE"
+   fi
+
+   BASETBLS=$(docker-compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(table_schema || '.\"' || table_name || '\"', ',') FROM information_schema.tables where table_catalog = '${APP__PSQL_DATABASE}' AND table_schema not in('pg_catalog', 'information_schema') AND table_type='BASE TABLE'")
+   if [[ "${BASETBLS}" = *[!\ ]* ]]; then
+      echo "Dropping tables:${BASETBLS}"
+      docker-compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP TABLE IF EXISTS ${BASETBLS} CASCADE"
+   fi
+
+   echo " [OK] Clean localhost database"
    echo ""
 
    echo "----> Restore database to localhost"
@@ -262,7 +303,8 @@ dbload () {
 
    echo ""
    echo -e "\e[34mDo you want to execute a migration in database '${DB_DBNAME}' ? (\e[33my/n\e[34m)\e[39m"
-   read -s -n 1
+   read -n 1
+   echo ""
    if [[ $REPLY =~ ^[Yy]$ ]]; then
       docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:migrations:migrate -n
    fi
@@ -326,32 +368,32 @@ sflogs () {
 usage () {
     echo "usage: bin/app COMMAND [ARGUMENTS]
 
-    selfupdate                   Updates bin/app to the latest version.
+    selfupdate                                     Updates bin/app to the latest version.
 
-    init                         Initialize project
-    update                       Update current project (Reload db, launch composer install)
-    destroy                      Remove all the project Docker containers with their volumes
+    init                                           Initialize project
+    update                                         Update current project (Reload db, launch composer install)
+    destroy                                        Remove all the project Docker containers with their volumes
 
-    start                        Start project
-    stop                         Stop project
-    restart                      Restart project
+    start                                          Start project
+    stop                                           Stop project
+    restart                                        Restart project
 
-    composer                     Use Composer inside the app container
-    console                      Use the Symfony console
-    bash                         Use bash inside the app container
-    php                          Executes a php command inside the app container
+    composer                                       Use Composer inside the app container
+    console                                        Use the Symfony console
+    bash                                           Use bash inside the app container
+    php                                            Executes a php command inside the app container
 
-    phpunit                      Executes a phpUnit Tests. Add --coverage for coverage support
-    grumphp <init|run...>        Executes multiple tasks
+    phpunit                                        Executes a phpUnit Tests. Add --coverage for coverage support
+    grumphp <init|run...>                          Executes multiple tasks
 
-    dbreload                     Update schema and reload fixture
-    dbload <PROD|STAGING>        Load choose environment DB into localhost
-    fileload <PROD|STAGING>      Load choose environment public files into local
+    dbreload                                       Update schema and reload fixture
+    dbload <PROD|STAGING> --ignore-excludes        Load choose environment DB into localhost
+    fileload <PROD|STAGING>                        Load choose environment public files into local
 
-    backup                       Backup database in .docker/postgres/YmdHi.backup.gz
-    restore <filename|latest>    Restore database
+    backup                                         Backup database in .docker/postgres/YmdHi.backup.gz
+    restore <filename|latest>                      Restore database
 
-    sflogs                       Return sf logs.
+    sflogs                                         Return sf logs.
     "
 }
 
