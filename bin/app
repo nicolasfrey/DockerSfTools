@@ -4,7 +4,7 @@ BRANCHE='master'
 
 # Version
 version () {
-   VERSION='2.1.0'
+   VERSION='2.1.1'
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
