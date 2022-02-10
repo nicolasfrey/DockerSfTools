@@ -11,7 +11,7 @@ version () {
 }
 
 selfupdate () {
-  curl --create-dirs -o bin/app -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/bin/app
+  curl --create-dirs -k -o bin/app -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/bin/app
   chmod +x bin/app
   bin/app version
 }
