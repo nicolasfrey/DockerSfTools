@@ -4,7 +4,7 @@ BRANCHE='master'
 
 # Version
 version () {
-   VERSION='2.1.1'
+   VERSION='2.1.2'
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
@@ -135,8 +135,8 @@ githooks () {
 
 # Initialize config
 config () {
-  [ -f ../grumphp.yml ] || curl -s -o grumphp.yml -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/sample-grumphp.yml
-  [ -f .php-cs-fixer.dist.php ] || curl -s -o app/.php-cs-fixer.dist.php -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/sample-cs-fixer.php
+  [ -f grumphp.yml ] || curl -s -o grumphp.yml -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/sample-grumphp.yml
+  [ -f app/.php-cs-fixer.dist.php ] || curl -s -o app/.php-cs-fixer.dist.php -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/sample-cs-fixer.php
 }
 
 # start docker

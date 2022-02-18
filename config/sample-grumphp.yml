@@ -9,26 +9,28 @@ grumphp:
     EXEC_GRUMPHP_COMMAND: ['docker-compose', 'run', '--rm', 'phpcli']
     ENV:
       COMMIT_MSG_FILE: '/home/wwwroot/.git/COMMIT_EDITMSG'
+  parallel:
+    enabled: true
+    max_workers: 32
   tasks:
     git_commit_message:
       allow_empty_message: false
-      enforce_capitalized_subject: false
-      enforce_no_subject_punctuations: false
-      enforce_no_subject_trailing_period: true
       enforce_single_lined_subject: true
-      type_scope_conventions: [ ]
-      max_body_width: 72
-      max_subject_width: 60
-#      matchers:
-#        Must contain JIRA issue number: /JIRA-([0-9]*)/
-      case_insensitive: true
-      multiline: true
-      additional_modifiers: ''
+    #      type_scope_conventions: [ ]
+    #      max_body_width: 400
+    #      max_subject_width: 100
+    #      matchers:
+    #        Must contain JIRA issue number: /^(JIRA-([0-9]*)|NO-JIRA)/
     phplint: ~
     phpcsfixer:
       config: '/home/wwwroot/app/.php-cs-fixer.dist.php'
-    jsonlint: ~
+    jsonlint:
+      detect_key_conflicts: true
     yamllint: ~
-#    twigcs: ~
-
-
+    twigcs:
+      path: '/home/wwwroot/app/templates'
+      severity: 'warning'
+      display: 'all'
+      ruleset: 'FriendsOfTwig\Twigcs\Ruleset\Official'
+      triggered_by: ['twig']
+      exclude: []
