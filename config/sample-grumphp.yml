@@ -6,12 +6,15 @@ grumphp:
       GRUMPHP_COMPOSER_DIR: "/root/.composer"
       GRUMPHP_BIN_DIR: "/root/.composer/vendor/bin"
   git_hook_variables:
-    EXEC_GRUMPHP_COMMAND: ['docker-compose', 'run', '--rm', 'phpcli']
+    EXEC_GRUMPHP_COMMAND: ['docker compose', 'run', '--rm', 'phpcli']
     ENV:
       COMMIT_MSG_FILE: '/home/wwwroot/.git/COMMIT_EDITMSG'
   parallel:
     enabled: true
     max_workers: 32
+  fixer:
+    enabled: true
+    fix_by_default: true
   tasks:
     git_commit_message:
       allow_empty_message: false
