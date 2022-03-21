@@ -28,6 +28,7 @@ $config
         '@Symfony' => true,
         '@Symfony:risky' => false,
 
+        'no_unset_on_property' => false,
         'fully_qualified_strict_types' => true,
         'global_namespace_import' => true,
         'native_function_invocation' => false,

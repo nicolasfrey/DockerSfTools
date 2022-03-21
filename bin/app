@@ -4,7 +4,7 @@ BRANCHE='master'
 
 # Version
 version () {
-   VERSION='2.1.2'
+   VERSION='2.2.0'
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
@@ -26,7 +26,7 @@ displayError () {
 # init project
 init () {
    # Docker recreate
-   docker-compose up -d --force-recreate || displayError
+   docker compose up -d --force-recreate || displayError
 
    # Update()
    echo ""
@@ -67,22 +67,22 @@ update () {
    echo ""
 
    echo "----> Install dependency"
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli composer install || displayError
+   docker compose run --rm -u "$USER":"$GROUP" phpcli composer install || displayError
    echo " [OK] Dependency installed"
 
    echo ""
 
    echo "----> Initialize database"
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:drop --full-database --force || displayError
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:database:create --if-not-exists || displayError
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:update --force || displayError
+   docker compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:drop --full-database --force || displayError
+   docker compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:database:create --if-not-exists || displayError
+   docker compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:update --force || displayError
    echo " [OK] Database initialized"
 
    echo ""
 
    if isWeb; then
        echo "----> Create directory"
-       docker-compose run --rm -u "$USER":"$GROUP" phpcli bash -c "
+       docker compose run --rm -u "$USER":"$GROUP" phpcli bash -c "
             mkdir -p public/upload &&
             chmod 777 public/upload -R
          " || displayError
@@ -91,7 +91,7 @@ update () {
    fi
 
    echo "----> Load fixture"
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:fixtures:load -n --purge-with-truncate  || displayError
+   docker compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:fixtures:load -n --purge-with-truncate  || displayError
    echo " [OK] Fixture loaded"
 }
 
@@ -99,14 +99,14 @@ update () {
 destroy () {
    if isWeb; then
        echo "----> Remove directory"
-       docker-compose run --rm -u "$USER":"$GROUP" phpcli rm -rf public/upload public/build vendor node_modules var bin/.phpunit
+       docker compose run --rm -u "$USER":"$GROUP" phpcli rm -rf public/upload public/build vendor node_modules var bin/.phpunit
        rm -f .docker/oracle/init/.cache
        echo " [OK] Directories removed"
        echo ""
    fi
 
    echo "----> Stop and remove docker images"
-   docker-compose down -v --rmi local
+   docker compose down -v --rmi local
    echo " [OK] Docker images removed"
 }
 
@@ -141,41 +141,41 @@ config () {
 
 # start docker
 start () {
-    docker-compose up -d
+    docker compose up -d
 }
 
 # stop docker
 stop () {
-    docker-compose stop
+    docker compose stop
 }
 
 # restart docker
 restart () {
-    docker-compose stop
-    docker-compose up -d
+    docker compose stop
+    docker compose up -d
 }
 
 # run Composer inside the app container
 composer () {
     declare ARGS=$*
-    docker-compose run --rm -u "$USER":"$GROUP" phpcli composer ${ARGS}
+    docker compose run --rm -u "$USER":"$GROUP" phpcli composer ${ARGS}
 }
 
 # run the Symfony console inside the app container
 console () {
     declare ARGS=$*
-    docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console ${ARGS}
+    docker compose run --rm -u "$USER":"$GROUP" phpcli bin/console ${ARGS}
 }
 
 # run bash
 bash () {
-    docker-compose run --rm -u "$USER":"$GROUP" phpcli bash
+    docker compose run --rm -u "$USER":"$GROUP" phpcli bash
 }
 
 # exec a php command into app container
 php () {
     declare ARGS=$*
-    docker-compose run --rm -u "$USER":"$GROUP" phpcli php ${ARGS}
+    docker compose run --rm -u "$USER":"$GROUP" phpcli php ${ARGS}
 }
 
 # run phpUnit
@@ -183,9 +183,9 @@ phpunit () {
    declare ARGS=$*
 
    if [[ ${ARGS} == *"--coverage"* ]]; then
-      docker-compose run --rm -u "$USER":"$GROUP" phpcli phpdbg -qrr ./bin/phpunit "${ARGS/--coverage/}"
+      docker compose run --rm -u "$USER":"$GROUP" phpcli phpdbg -qrr ./bin/phpunit "${ARGS/--coverage/}"
    else
-      docker-compose run --rm -u "$USER":"$GROUP" phpcli ./bin/phpunit --no-coverage ${ARGS}
+      docker compose run --rm -u "$USER":"$GROUP" phpcli ./bin/phpunit --no-coverage ${ARGS}
    fi
 }
 
@@ -194,23 +194,23 @@ grumphp () {
    declare ARGS="$*"
 
    if [[ -z $1 ]]; then
-      docker-compose run --rm phpcli grumphp --config=../grumphp.yml run
+      docker compose run --rm phpcli grumphp --config=../grumphp.yml run
    elif [ $1 == 'init' ]; then
        githooks
    else
-      docker-compose run --rm phpcli grumphp --config=../grumphp.yml run -v ${ARGS}
+      docker compose run --rm phpcli grumphp --config=../grumphp.yml run -v ${ARGS}
    fi
 }
 
 # run Update schema and reload fixture
 dbreload () {
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli rm -rf public/upload
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli mkdir -p public/upload
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli chmod 777 public/upload -R
+   docker compose run --rm -u "$USER":"$GROUP" phpcli rm -rf public/upload
+   docker compose run --rm -u "$USER":"$GROUP" phpcli mkdir -p public/upload
+   docker compose run --rm -u "$USER":"$GROUP" phpcli chmod 777 public/upload -R
 
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:drop --full-database --force
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:update --force
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:fixtures:load -n --purge-with-truncate
+   docker compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:drop --full-database --force
+   docker compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:schema:update --force
+   docker compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:fixtures:load -n --purge-with-truncate
 }
 
 dbload () {
@@ -271,29 +271,29 @@ dbload () {
 
    echo "----> Clean localhost database"
 
-   SEQUENCES=$(docker-compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(sequence_schema || '.\"' || sequence_name, '\",') FROM information_schema.sequences where sequence_catalog = '${APP__PSQL_DATABASE}'")
+   SEQUENCES=$(docker compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(sequence_schema || '.\"' || sequence_name, '\",') FROM information_schema.sequences where sequence_catalog = '${APP__PSQL_DATABASE}'")
    if [[ "${SEQUENCES}" = *[!\ ]* ]]; then
       echo "Dropping sequences:${SEQUENCES}"
-      docker-compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP SEQUENCE IF EXISTS ${SEQUENCES} CASCADE"
+      docker compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP SEQUENCE IF EXISTS ${SEQUENCES} CASCADE"
    fi
 
-   VIEWS=$(docker-compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(table_schema || '.\"' || table_name || '\"', ',') FROM information_schema.tables where table_catalog = '${APP__PSQL_DATABASE}' AND table_schema not in('pg_catalog', 'information_schema') AND table_type='VIEW'")
+   VIEWS=$(docker compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(table_schema || '.\"' || table_name || '\"', ',') FROM information_schema.tables where table_catalog = '${APP__PSQL_DATABASE}' AND table_schema not in('pg_catalog', 'information_schema') AND table_type='VIEW'")
    if [[ "${VIEWS}" = *[!\ ]* ]]; then
       echo "Dropping views:${VIEWS}"
-      docker-compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP VIEW IF EXISTS ${VIEWS} CASCADE"
+      docker compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP VIEW IF EXISTS ${VIEWS} CASCADE"
    fi
 
-   BASETBLS=$(docker-compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(table_schema || '.\"' || table_name || '\"', ',') FROM information_schema.tables where table_catalog = '${APP__PSQL_DATABASE}' AND table_schema not in('pg_catalog', 'information_schema') AND table_type='BASE TABLE'")
+   BASETBLS=$(docker compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(table_schema || '.\"' || table_name || '\"', ',') FROM information_schema.tables where table_catalog = '${APP__PSQL_DATABASE}' AND table_schema not in('pg_catalog', 'information_schema') AND table_type='BASE TABLE'")
    if [[ "${BASETBLS}" = *[!\ ]* ]]; then
       echo "Dropping tables:${BASETBLS}"
-      docker-compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP TABLE IF EXISTS ${BASETBLS} CASCADE"
+      docker compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP TABLE IF EXISTS ${BASETBLS} CASCADE"
    fi
 
    echo " [OK] Clean localhost database"
    echo ""
 
    echo "----> Restore database to localhost"
-   docker-compose exec postgres pg_restore --format=c --verbose --clean --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${BACKUP_FILE}
+   docker compose exec postgres pg_restore --format=c --verbose --clean --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${BACKUP_FILE}
    echo " [OK] Restore database to localhost"
    echo ""
 
@@ -306,7 +306,7 @@ dbload () {
    read -n 1
    echo ""
    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      docker-compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:migrations:migrate -n
+      docker compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:migrations:migrate -n
    fi
 }
 
@@ -334,35 +334,35 @@ fileload () {
    echo ""
 
    echo "----> Change permissions"
-   docker-compose run --rm -u "$USER":"$GROUP" phpcli chmod 777 public/upload -R
+   docker compose run --rm -u "$USER":"$GROUP" phpcli chmod 777 public/upload -R
    echo " [OK] Change permissions"
 }
 
 backup () {
    gzfile=$(echo `date '+%Y%m%d%H%M'`.backup.gz)
 
-   docker-compose exec postgres bash -c "PGPASSWORD="${APP__PSQL_PASSWORD}" pg_dump --compress=9 --verbose --format=c --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" > /var/backup/${gzfile}"
+   docker compose exec postgres bash -c "PGPASSWORD="${APP__PSQL_PASSWORD}" pg_dump --compress=9 --verbose --format=c --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" > /var/backup/${gzfile}"
 }
 
 restore () {
    declare FILENAME=$1
 
    if [[ "${FILENAME}" == 'latest' ]]; then
-      FILENAME=$(docker-compose exec postgres bash -c "find ./var/backup -name *.backup.gz  -printf '%f\n' | sort -n | tail -n 1 | tr -dc '[[:print:]]'")
+      FILENAME=$(docker compose exec postgres bash -c "find ./var/backup -name *.backup.gz  -printf '%f\n' | sort -n | tail -n 1 | tr -dc '[[:print:]]'")
    fi
 
    if [[ -z ${FILENAME} ]]; then
-      docker-compose exec postgres bash -c "find ./var/backup -name *.backup.gz  -printf '%f\n'"
+      docker compose exec postgres bash -c "find ./var/backup -name *.backup.gz  -printf '%f\n'"
       exit 0
    fi
 
    echo "Restore \"${FILENAME}\" backup"
-   docker-compose exec postgres pg_restore --format=c --verbose --clean --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${FILENAME}
+   docker compose exec postgres pg_restore --format=c --verbose --clean --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${FILENAME}
 }
 
 # Return symfony logs
 sflogs () {
-   docker-compose exec -it -u "$USER":"$GROUP" phpfpm bash -c "tail -f var/log/dev.log"
+   docker compose exec -it -u "$USER":"$GROUP" phpfpm bash -c "tail -f var/log/dev.log"
 }
 
 usage () {
