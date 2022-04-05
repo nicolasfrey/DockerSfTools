@@ -4,7 +4,7 @@ BRANCHE='master'
 
 # Version
 version () {
-   VERSION='2.2.0'
+   VERSION='2.2.1'
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
@@ -236,7 +236,7 @@ dbload () {
 
    DATABASE="APP_${SOURCE}__DATABASE_URL"
 
-   pattern='^(pgsql):\/\/(.*):(.*)@(.*):([0-9]*)\/([a-zA-Z0-9_\-]*)[\s]*$'
+   pattern='^(pgsql|postgresql):\/\/(.*):(.*)@(.*):([0-9]*)\/([a-zA-Z0-9_\-]*)[\s]*\??(.*)$'
    if [[ ${!DATABASE} =~ $pattern ]]; then
       DB_PROTOCOL=${BASH_REMATCH[1]}
       DB_USER=${BASH_REMATCH[2]}
