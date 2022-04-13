@@ -254,6 +254,7 @@ dbload () {
    CURRENT_USER=$(id -u -n)
    BACKUP_FILE="dump_$(date '+%Y%m%d%H%M').sql.backup"
    STR_EXCLUDE_TABLE_DATA=''
+   STR_EXCLUDE_SCHEMA=''
 
    if [[ "${IGNORE}" != '--ignore-excludes' ]] && [[ "${APP__PSQL_EXCLUDE_TABLE_DATA}" = *[!\ ]* ]]; then
       EXCLUDE_DATA=$(echo "${APP__PSQL_EXCLUDE_TABLE_DATA}" | tr ",; " "\n")
@@ -264,8 +265,12 @@ dbload () {
       done
    fi
 
+   if [[ "${IGNORE}" != '--ignore-excludes' ]] && [[ "${APP__PSQL_EXCLUDE_SCHEMA}" = *[!\ ]* ]]; then
+      STR_EXCLUDE_SCHEMA=" --exclude-schema \"${APP__PSQL_EXCLUDE_SCHEMA}\""
+   fi
+
    echo "----> Backup ${SOURCE} database"
-   ssh "${CURRENT_USER}@${DB_HOST}" PGPASSWORD="${DB_PASSWORD}" pg_dump "${STR_EXCLUDE_TABLE_DATA}" --compress=9 --verbose --format=c --host=localhost --username="${DB_USER}" --dbname="${DB_DBNAME}" > ".docker/postgres/backup/${BACKUP_FILE}"
+   ssh "${CURRENT_USER}@${DB_HOST}" PGPASSWORD="${DB_PASSWORD}" pg_dump "${STR_EXCLUDE_SCHEMA}" "${STR_EXCLUDE_TABLE_DATA}" --compress=9 --verbose --format=c --host=localhost --username="${DB_USER}" --dbname="${DB_DBNAME}" > ".docker/postgres/backup/${BACKUP_FILE}"
    echo " [OK] Backup ${SOURCE} database"
    echo ""
 
