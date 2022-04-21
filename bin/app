@@ -4,7 +4,7 @@ BRANCHE='master'
 
 # Version
 version () {
-   VERSION='2.4.0'
+   VERSION='2.4.1'
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
@@ -208,7 +208,11 @@ rector () {
    bin/app composer info |grep rector/rector >/dev/null 2>&1 || bin/app composer require rector/rector --dev
 
    if bin/app composer info|grep rector/rector >/dev/null 2>&1; then
-      docker compose run --rm -u "$USER":"$GROUP" phpcli vendor/bin/rector ${ARGS}
+      if [[ -z $1 ]]; then
+         docker compose run --rm -u "$USER":"$GROUP" phpcli vendor/bin/rector --dry-run
+      else
+         docker compose run --rm -u "$USER":"$GROUP" phpcli vendor/bin/rector ${ARGS}
+      fi
    else
       echo ""
       echo -e "\e[31mRector is not installed.\e[39m"
@@ -404,7 +408,7 @@ usage () {
 
     phpunit                                        Executes a phpUnit Tests. Add --coverage for coverage support
     grumphp <init|run...>                          Executes a GrumPHP task.
-    rector                                         Executes Rector Code Style Checker.
+    rector <process...>                            Executes Rector Code Style Checker. Default dry-run mode.
 
     dbreload                                       Update schema and reload fixture
     dbload <PROD|STAGING> --ignore-excludes        Load choose environment DB into localhost
