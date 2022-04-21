@@ -4,7 +4,7 @@ BRANCHE='master'
 
 # Version
 version () {
-   VERSION='2.3.0'
+   VERSION='2.4.0'
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
@@ -202,6 +202,20 @@ grumphp () {
    fi
 }
 
+rector () {
+   declare ARGS="$*"
+
+   bin/app composer info |grep rector/rector >/dev/null 2>&1 || bin/app composer require rector/rector --dev
+
+   if bin/app composer info|grep rector/rector >/dev/null 2>&1; then
+      docker compose run --rm -u "$USER":"$GROUP" phpcli vendor/bin/rector ${ARGS}
+   else
+      echo ""
+      echo -e "\e[31mRector is not installed.\e[39m"
+      echo ""
+   fi
+}
+
 # run Update schema and reload fixture
 dbreload () {
    docker compose run --rm -u "$USER":"$GROUP" phpcli rm -rf public/upload
@@ -367,7 +381,7 @@ restore () {
 
 # Return symfony logs
 sflogs () {
-   docker compose exec -it -u "$USER":"$GROUP" phpfpm bash -c "tail -f var/log/dev.log"
+    docker compose run --rm -u "$USER":"$GROUP" phpcli bash -c "tail -f var/log/dev.log"
 }
 
 usage () {
@@ -389,7 +403,8 @@ usage () {
     php                                            Executes a php command inside the app container
 
     phpunit                                        Executes a phpUnit Tests. Add --coverage for coverage support
-    grumphp <init|run...>                          Executes multiple tasks
+    grumphp <init|run...>                          Executes a GrumPHP task.
+    rector                                         Executes Rector Code Style Checker.
 
     dbreload                                       Update schema and reload fixture
     dbload <PROD|STAGING> --ignore-excludes        Load choose environment DB into localhost
@@ -451,7 +466,7 @@ main () {
       exit 0
    fi
 
-   if [[ ! $1 =~ ^(version|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|backup|restore|dbload|fileload|dbreload|sflogs|grumphp|selfupdate)$ ]]; then
+   if [[ ! $1 =~ ^(version|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|rector|backup|restore|dbload|fileload|dbreload|sflogs|grumphp|selfupdate)$ ]]; then
       echo "$1 is not a supported command"
       exit 1
    fi
