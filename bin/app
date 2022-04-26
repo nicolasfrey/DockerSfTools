@@ -4,7 +4,7 @@ BRANCHE='master'
 
 # Version
 version () {
-   VERSION='2.4.1'
+   VERSION='2.4.2'
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
@@ -182,7 +182,9 @@ php () {
 phpunit () {
    declare ARGS=$*
 
-   if [[ ${ARGS} == *"--coverage"* ]]; then
+   if [ $1 == 'init' ]; then
+         docker compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:database:create --env=test --if-not-exists || displayError
+   elif [[ ${ARGS} == *"--coverage"* ]]; then
       docker compose run --rm -u "$USER":"$GROUP" phpcli phpdbg -qrr ./bin/phpunit "${ARGS/--coverage/}"
    else
       docker compose run --rm -u "$USER":"$GROUP" phpcli ./bin/phpunit --no-coverage ${ARGS}
@@ -406,7 +408,7 @@ usage () {
     bash                                           Use bash inside the app container
     php                                            Executes a php command inside the app container
 
-    phpunit                                        Executes a phpUnit Tests. Add --coverage for coverage support
+    phpunit <init...>                              Executes a phpUnit Tests. Add --coverage for coverage support. Init for create database
     grumphp <init|run...>                          Executes a GrumPHP task.
     rector <process...>                            Executes Rector Code Style Checker. Default dry-run mode.
 
