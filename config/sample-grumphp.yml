@@ -1,5 +1,8 @@
 grumphp:
   environment:
+    ascii:
+      failed: failed.txt
+      succeeded: success.txt
     variables:
       GRUMPHP_GIT_REPOSITORY_DIR: "/home/wwwroot/.git"
       GRUMPHP_PROJECT_DIR: "/home/wwwroot/app"
@@ -19,11 +22,11 @@ grumphp:
     git_commit_message:
       allow_empty_message: false
       enforce_single_lined_subject: true
-    #      type_scope_conventions: [ ]
-    #      max_body_width: 400
-    #      max_subject_width: 100
-    #      matchers:
-    #        Must contain JIRA issue number: /^(JIRA-([0-9]*)|NO-JIRA)/
+      type_scope_conventions: [ ]
+      max_body_width: 400
+      max_subject_width: 100
+#      matchers:
+#        Must contain JIRA issue number: /^(JIRA-([0-9]*)|NO-JIRA)/
     phplint: ~
     phpcsfixer:
       config: '/home/wwwroot/app/.php-cs-fixer.dist.php'
