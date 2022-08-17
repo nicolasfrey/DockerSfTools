@@ -11,5 +11,5 @@ Install
 ------------
 
 ````bash
-curl --create-dirs -k -s -o bin/app -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/master/bin/app && chmod +x bin/app && bin/app version
+
 ````
