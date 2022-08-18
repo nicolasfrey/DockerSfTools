@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-source "$(dirname "$0")/include/update.sh"
+source "$(dirname "$0")/include/package.sh"
 source "$(dirname "$0")/include/common.sh"
 source "$(dirname "$0")/include/docker.sh"
 source "$(dirname "$0")/include/database.sh"
 source "$(dirname "$0")/include/postgres.sh"
 source "$(dirname "$0")/include/mongo.sh"
 source "$(dirname "$0")/include/redis.sh"
-source "$(dirname "$0")/include/system.sh"
+source "$(dirname "$0")/include/filesystem.sh"
 
 # Start docker project
 start () {
@@ -100,18 +100,6 @@ update () {
 
    echo ""
 
-   echo "----> Add githooks"
-   githooks
-   echo " [OK] Githooks added"
-
-   echo ""
-
-   echo "----> Add default config"
-   config
-   echo " [OK] Default config added"
-
-   echo ""
-
    echo "----> Install dependency"
    dockerRuncli composer install || displayError
    echo " [OK] Dependency installed"
@@ -153,33 +141,16 @@ destroy () {
    echo " [OK] Docker images removed"
 }
 
-# Install git hooks
-githooks () {
-  PRE_COMMIT_EXISTS=$([ -e .git/hooks/pre-commit ] && echo 1 || echo 0)
-  COMMIT_MSG_EXISTS=$([ -e .git/hooks/commit-msg ] && echo 1 || echo 0)
-
-  curl -s -o .git/hooks/pre-commit -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/pre-commit
-  curl -s -o .git/hooks/commit-msg -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/commit-msg
-  chmod +x .git/hooks/*;
-  dos2unix -q .git/hooks/*
-
-  if [ "$PRE_COMMIT_EXISTS" = 0 ]; then
-      echo "Pre-commit git hook is installed!"
-  else
-      echo "Pre-commit git hook is updated!"
-  fi
-
-  if [ "$COMMIT_MSG_EXISTS" = 0 ]; then
-      echo "Commit-msg git hook is installed!"
-  else
-      echo "Commit-msg git hook is updated!"
-  fi
+config () {
+   packageInit
 }
 
-# Initialize config
-config () {
-  [ -f grumphp.yml ] || curl -s -o grumphp.yml -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/sample-grumphp.yml
-  [ -f app/.php-cs-fixer.dist.php ] || curl -s -o app/.php-cs-fixer.dist.php -X GET https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/config/sample-cs-fixer.php
+version () {
+   packageVersion
+}
+
+selfupdate () {
+   packageSelfUpdate
 }
 
 # run phpUnit
@@ -243,6 +214,7 @@ usage () {
 
     selfupdate                                     Updates bin/app to the latest version.
 
+    config                                         Initialize bin/app, grumphp, phpCSFixer, githooks
     init                                           Initialize project
     update                                         Update current project (Reload db, launch composer install)
     destroy                                        Remove all the project Docker containers with their volumes
@@ -277,7 +249,7 @@ main () {
       exit 0
    fi
 
-   if [[ ! $1 =~ ^(version|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|rector|backup|restore|dbload|fileload|dbreload|sflogs|grumphp|selfupdate)$ ]]; then
+   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|rector|backup|restore|dbload|fileload|dbreload|sflogs|grumphp|selfupdate)$ ]]; then
       echo "$1 is not a supported command"
       exit 1
    fi
