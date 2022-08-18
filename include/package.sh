@@ -38,7 +38,7 @@ packageInit () {
    echo ""
 
    echo "----> Clean Git and directory structure"
-   packageRemoveGit
+   packageCleanDirectory
    echo " [OK] Directories remove"
 }
 
