@@ -47,7 +47,7 @@ packageInit () {
 
 # Remove unnecessary folders
 packageCleanDirectory () {
-   rm -rf bin/.git bin/sample README.md bin/config
+   rm -rf bin/.git
 }
 
 # Install git hooks
