@@ -23,8 +23,11 @@ packageSelfupdate () {
    #bin/app version
 }
 
-packageInit () {
+packageDestroy() {
+   echo "destroy"
+}
 
+packageInit () {
    echo "----> Add githooks"
    packageAddGithooks
    echo " [OK] Githooks added"

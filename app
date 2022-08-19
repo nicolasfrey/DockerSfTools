@@ -142,6 +142,10 @@ destroy () {
 }
 
 config () {
+   if [ "$1" == '--destroy' ]; then
+      packageDestroy
+   fi
+
    packageInit
 }
 
@@ -214,7 +218,7 @@ usage () {
 
     selfupdate                                     Updates bin/app to the latest version.
 
-    config                                         Initialize bin/app, grumphp, phpCSFixer, githooks
+    config --destroy                               Initialize bin/app, grumphp, phpCSFixer, githooks. Add --destroy for clean project
     init                                           Initialize project
     update                                         Update current project (Reload db, launch composer install)
     destroy                                        Remove all the project Docker containers with their volumes
