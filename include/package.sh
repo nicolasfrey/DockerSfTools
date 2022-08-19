@@ -11,6 +11,7 @@ packageVersion () {
 }
 
 packageSelfUpdate () {
+   rm -rf ./bin
    git clone --branch ${BRANCHE} https://github.com/nicolasfrey/DockerSfTools.git bin
    bin/app version
 }
