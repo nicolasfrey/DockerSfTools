@@ -31,9 +31,7 @@ postgresDBLoad () {
    fi
 
    if [[ -n "${IGNORE}" ]] && [[ ${IGNORE} != '--ignore-excludes' ]]; then
-      echo -e "\e[41m"
-      echo -e "\n Parameter \"${IGNORE}\" is not defined ! \n\n Did you mean one of these? \n    --ignore-excludes"
-      echo -e "\e[49m"
+      displayError "Parameter \"${IGNORE}\" is not defined ! \n\n Did you mean one of these? \n    --ignore-excludes"
       exit
    fi
 

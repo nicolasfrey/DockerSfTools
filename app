@@ -142,11 +142,14 @@ destroy () {
 }
 
 config () {
-   if [ "$1" == '--destroy' ]; then
+   if [[ -z $1 ]]; then
+      packageInit
+   elif [ "$1" == '--destroy' ]; then
       packageDestroy
+   else
+      displayError "Parameter \"${1}\" is not defined ! \n\n Did you mean one of these? \n    --destroy"
+      exit
    fi
-
-   packageInit
 }
 
 version () {
