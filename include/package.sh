@@ -4,7 +4,7 @@ BRANCHE='master'
 
 # Version
 packageVersion () {
-   VERSION='3.0.0'
+   VERSION='3.0.1'
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
@@ -13,6 +13,7 @@ packageVersion () {
 packageSelfUpdate () {
    rm -rf ./bin
    git clone --branch ${BRANCHE} https://github.com/nicolasfrey/DockerSfTools.git bin
+   packageCleanDirectory
    bin/app version
 }
 
