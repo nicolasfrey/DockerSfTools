@@ -11,5 +11,5 @@ Install
 ------------
 
 ````bash
-git clone --branch feature/multibdd_refactory https://github.com/nicolasfrey/DockerSfTools.git bin && bin/app config
+git clone --branch master https://github.com/nicolasfrey/DockerSfTools.git bin && bin/app config
 ````
