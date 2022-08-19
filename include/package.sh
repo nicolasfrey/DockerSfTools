@@ -24,7 +24,9 @@ packageSelfupdate () {
 }
 
 packageDestroy() {
-   echo "destroy"
+   echo "----> Remove githooks"
+      rm .git/hooks/pre-commit .git/hooks/commit-msg
+   echo " [OK] Githooks removed"
 }
 
 packageInit () {
