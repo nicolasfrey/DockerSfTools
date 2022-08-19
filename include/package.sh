@@ -10,7 +10,7 @@ packageVersion () {
    echo ""
 }
 
-packageSelfupdate () {
+packageSelfUpdate () {
    git clone --branch ${BRANCHE} https://github.com/nicolasfrey/DockerSfTools.git bin
    bin/app version
 }
