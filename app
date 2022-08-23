@@ -41,17 +41,17 @@ backup () {
 
 # Restore DB
 restore () {
-   commonDBRestore "$1"
+   commonDBRestore "$@"
 }
 
 # run Composer inside the app container
 composer () {
-   dockerRuncli composer "$*"
+   dockerRuncli composer "$@"
 }
 
 # run the Symfony console inside the app container
 console () {
-   dockerRuncli bin/console "$*"
+   dockerRuncli bin/console "$@"
 }
 
 # run bash on phpcli
@@ -61,7 +61,7 @@ bash () {
 
 # exec a php command into app container
 php () {
-    dockerRuncli php "$*"
+    dockerRuncli php "$@"
 }
 
 # init project
@@ -208,7 +208,7 @@ rector () {
 }
 
 fileload () {
-   systemFileload "$*"
+   systemFileload "$@"
 }
 
 # Return symfony logs
