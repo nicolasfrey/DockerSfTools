@@ -81,7 +81,8 @@ init () {
       - HTTP: http://${APP__APP_NAME}.local.gd
       - MailDev: http://${APP__APP_NAME}.maildev.local.gd
       - Postgres via SSH: psql://${APP__PSQL_USER}:${APP__PSQL_PASSWORD}@${APP__APP_NAME}.postgres.local.gd:5432/${APP__PSQL_DATABASE}
-      - SSH (for tunnel): ssh://proxy:pass@${APP__APP_NAME}.ssh.local.gd:2222"
+      - MongoDB via SSH: mongodb://${APP__MDB_USER}:${APP__MDB_PASSWORD}@${APP__APP_NAME}.mongodb.local.gd:27017/${APP__MDB_DATABASE}
+      - SSH (for tunnel): ssh://proxy:pass@ssh.local.gd:2222"
 }
 
 # update project

@@ -7,16 +7,18 @@ mongoDBReload () {
 }
 
 mongoInitDB () {
+   APP__DB_MANAGER_LIST=${APP__DB_MANAGER_LIST:-"default"}
 
-#   dockerRuncli bin/console doctrine:mongodb:schema:drop --full-database --force
-#   dockerRuncli bin/console doctrine:mongodb:schema:update --force
-#   dockerRuncli bin/console doctrine:mongodb:fixtures:load -n
+   if [[ "${APP__DB_MANAGER_LIST}" = *[!\ ]* ]]; then
+      local DB_MANAGER_LIST
+      DB_MANAGER_LIST=$(echo "${APP__DB_MANAGER_LIST}" | tr ",; " "\n")
 
-
-   dockerRuncli bin/console doctrine:mongodb:schema:drop
-   dockerRuncli bin/console doctrine:mongodb:schema:drop --dm=temp
-   dockerRuncli bin/console doctrine:mongodb:schema:create || displayError
-   dockerRuncli bin/console doctrine:mongodb:schema:create --dm=temp || displayError
+      for DB in $DB_MANAGER_LIST
+      do
+         echo "dockerRuncli bin/console doctrine:mongodb:schema:drop --dm=${DB}"
+         echo "dockerRuncli bin/console doctrine:mongodb:schema:create --dm=${DB} || displayError"
+      done
+   fi
 }
 
 mongoLoadFixtures () {

@@ -3,11 +3,11 @@
 commonDBRun() {
    local COMMAND=${1}
 
-   if [[ "${APP__DB_LIST}" = *[!\ ]* ]]; then
-         local DB_LIST
-         DB_LIST=$(echo "${APP__DB_LIST}" | tr ",; " "\n")
+   if [[ "${APP__DB_TYPE}" = *[!\ ]* ]]; then
+         local DB_TYPE
+         DB_TYPE=$(echo "${APP__DB_TYPE}" | tr ",; " "\n")
 
-         for DB in $DB_LIST
+         for DB in $DB_TYPE
          do
             "${DB}""${COMMAND}" "${@:2}"
          done
