@@ -15,8 +15,8 @@ mongoInitDB () {
 
       for DB in $DB_MANAGER_LIST
       do
-         echo "dockerRuncli bin/console doctrine:mongodb:schema:drop --dm=${DB}"
-         echo "dockerRuncli bin/console doctrine:mongodb:schema:create --dm=${DB} || displayError"
+         dockerRuncli bin/console doctrine:mongodb:schema:drop --dm=${DB}
+         dockerRuncli bin/console doctrine:mongodb:schema:create --dm=${DB} || displayError
       done
    fi
 }
