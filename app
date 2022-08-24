@@ -41,17 +41,17 @@ backup () {
 
 # Restore DB
 restore () {
-   commonDBRestore "$1"
+   commonDBRestore "$@"
 }
 
 # run Composer inside the app container
 composer () {
-   dockerRuncli composer "$*"
+   dockerRuncli composer "$@"
 }
 
 # run the Symfony console inside the app container
 console () {
-   dockerRuncli bin/console "$*"
+   dockerRuncli bin/console "$@"
 }
 
 # run bash on phpcli
@@ -61,7 +61,7 @@ bash () {
 
 # exec a php command into app container
 php () {
-    dockerRuncli php "$*"
+    dockerRuncli php "$@"
 }
 
 # init project
@@ -81,7 +81,8 @@ init () {
       - HTTP: http://${APP__APP_NAME}.local.gd
       - MailDev: http://${APP__APP_NAME}.maildev.local.gd
       - Postgres via SSH: psql://${APP__PSQL_USER}:${APP__PSQL_PASSWORD}@${APP__APP_NAME}.postgres.local.gd:5432/${APP__PSQL_DATABASE}
-      - SSH (for tunnel): ssh://proxy:pass@${APP__APP_NAME}.ssh.local.gd:2222"
+      - MongoDB via SSH: mongodb://${APP__MDB_USER}:${APP__MDB_PASSWORD}@${APP__APP_NAME}.mongodb.local.gd:27017/${APP__MDB_DATABASE}
+      - SSH (for tunnel): ssh://proxy:pass@ssh.local.gd:2222"
 }
 
 # update project
@@ -208,7 +209,7 @@ rector () {
 }
 
 fileload () {
-   systemFileload "$*"
+   systemFileload "$@"
 }
 
 # Return symfony logs

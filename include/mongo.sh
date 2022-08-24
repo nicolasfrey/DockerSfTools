@@ -1,15 +1,28 @@
 #!/usr/bin/env bash
 
 mongoDBReload () {
-   displayMessage "${FUNCNAME[0]}, Not implemented yet"
+   systemCreateFolder "${APP__APPLICATION_FOLDER}"
+   mongoInitDB
+   mongoLoadFixtures
 }
 
 mongoInitDB () {
-   displayMessage "${FUNCNAME[0]}, Not implemented yet"
+   APP__DB_MANAGER_LIST=${APP__DB_MANAGER_LIST:-"default"}
+
+   if [[ "${APP__DB_MANAGER_LIST}" = *[!\ ]* ]]; then
+      local DB_MANAGER_LIST
+      DB_MANAGER_LIST=$(echo "${APP__DB_MANAGER_LIST}" | tr ",; " "\n")
+
+      for DB in $DB_MANAGER_LIST
+      do
+         echo "dockerRuncli bin/console doctrine:mongodb:schema:drop --dm=${DB}"
+         echo "dockerRuncli bin/console doctrine:mongodb:schema:create --dm=${DB} || displayError"
+      done
+   fi
 }
 
 mongoLoadFixtures () {
-   displayMessage "${FUNCNAME[0]}, Not implemented yet"
+   dockerRuncli bin/console doctrine:mongodb:fixtures:load -n || displayError
 }
 
 mongoDBLoad () {
