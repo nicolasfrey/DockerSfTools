@@ -50,7 +50,7 @@ dockerStop () {
    docker compose down ${destroy_str}
 
    # Docker up common
-   docker compose -f "${dc_common_lib_path}" down
+   docker compose -f "${dc_common_lib_path}" --env-file .env down
 }
 
 # restart docker
