@@ -7,7 +7,7 @@ networks:
 services:
 
   nginx-proxy:
-    image: ${SYMFONY_APP_PATH}${SYMFONY_APP_PATH}nginx/nginx-proxy:latest
+    image: ${ARTIFACTORY_PATH}${REPOSITORY_PATH}nginx/nginx-proxy:latest
     restart: 'always'
     ports:
       - "80:80"
@@ -17,7 +17,7 @@ services:
       - nginx-proxy
 
   openssh-server:
-    image: ${SYMFONY_APP_PATH}${SYMFONY_APP_PATH}ssh/openssh-server:latest
+    image: ${ARTIFACTORY_PATH}${REPOSITORY_PATH}ssh/openssh-server:latest
     environment:
       PASSWORD_ACCESS: true
       USER_NAME: proxy
