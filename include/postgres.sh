@@ -115,7 +115,7 @@ postgresDBLoad () {
    read -n 1
    echo ""
    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      docker compose run --rm -u "$USER":"$GROUP" phpcli bin/console doctrine:migrations:migrate -n
+      dockerRuncli bin/console doctrine:migrations:migrate -n
    fi
 }
 
