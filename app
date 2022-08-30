@@ -16,12 +16,12 @@ start () {
 
 # Stop docker project
 stop () {
-   dockerStop "$1"
+   dockerStop "$@"
 }
 
 # Restart docker project
 restart () {
-   dockerRestart
+   dockerRestart "$@"
 }
 
 # Reset DB and load fixtures
@@ -228,8 +228,8 @@ usage () {
     destroy                                        Remove all the project Docker containers with their volumes
 
     start --force-recreate                         Start project
-    stop --destroy                                 Stop project
-    restart                                        Restart project
+    stop --destroy --full                          Stop project. Add --destroy for remove images and orphans. Add --full for stop common containers.
+    restart --full                                 Restart project. Add --full for restart common containers.
 
     composer                                       Use Composer inside the app container
     console                                        Use the Symfony console

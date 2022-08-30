@@ -37,12 +37,10 @@ dockerStart () {
    docker compose -f "${dc_common_lib_path}" --env-file .env up -d ${RECREATE} || displayError
 }
 
-# stop docker
 dockerStop () {
-   local DESTROY=${1}
-   testParam "${DESTROY}" "destroy"
+   local ARGS=$*
 
-   if [[ "${DESTROY}" == '--destroy' ]]; then
+   if [[ ${ARGS} == *"--destroy"* ]]; then
       local destroy_str="-v --rmi local --remove-orphans"
    fi
 
@@ -50,12 +48,15 @@ dockerStop () {
    docker compose down ${destroy_str}
 
    # Docker up common
-   docker compose -f "${dc_common_lib_path}" --env-file .env down
+   if [[ ${ARGS} == *"--full"* ]]; then
+      # shellcheck disable=SC2086
+      docker compose -f "${dc_common_lib_path}" --env-file .env down ${destroy_str}
+   fi
 }
 
 # restart docker
 dockerRestart () {
-    dockerStop "${1}" && dockerStart "${1}"
+    dockerStop "$@" && dockerStart "${1}"
 }
 
 # Test et récupère le dossier du projet COMMON
