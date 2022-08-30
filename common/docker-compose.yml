@@ -1,0 +1,29 @@
+version: '3.7'
+
+networks:
+  nginx-proxy:
+    external: true
+
+services:
+
+  nginx-proxy:
+    image: ${ARTIFACTORY_PATH}${REPOSITORY_PATH}nginx/nginx-proxy:latest
+    restart: 'always'
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - nginx-proxy
+
+  openssh-server:
+    image: ${ARTIFACTORY_PATH}${REPOSITORY_PATH}ssh/openssh-server:latest
+    environment:
+      PASSWORD_ACCESS: true
+      USER_NAME: proxy
+      USER_PASSWORD: pass
+      DOCKER_MODS: linuxserver/mods:openssh-server-ssh-tunnel
+    ports:
+      - "2222:2222"
+    networks:
+      - nginx-proxy

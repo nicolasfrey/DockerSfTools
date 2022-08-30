@@ -2,7 +2,7 @@
 
 # Test login on artifactory
 dockerIsConnected () {
-   docker login artifactory.groupe.pharmagest.com < /dev/null >& /dev/null
+   docker login "${APP__ARTIFACTORY_PATH}" < /dev/null >& /dev/null
 
    # shellcheck disable=SC2181
    if [ $? -eq 0 ]; then
@@ -15,8 +15,8 @@ dockerIsConnected () {
 # Login on artifactory
 dockerLogin () {
    if ! dockerIsConnected; then
-      echo "----> Docker login artifactory.groupe.pharmagest.com"
-      docker login artifactory.groupe.pharmagest.com 2> /dev/null || displayError "Failed to connect to artifactory server. Please try again !"
+      echo "----> Docker login ${APP__ARTIFACTORY_PATH}"
+      docker login "${APP__ARTIFACTORY_PATH}" 2> /dev/null || displayError "Failed to connect to artifactory server. Please try again !"
    fi
 }
 
@@ -34,15 +34,13 @@ dockerStart () {
 
    # Docker up common
    # shellcheck disable=SC2086
-   docker compose -f "${dc_common_lib_path}" up -d ${RECREATE} || displayError
+   docker compose -f "${dc_common_lib_path}" --env-file .env up -d ${RECREATE} || displayError
 }
 
-# stop docker
 dockerStop () {
-   local DESTROY=${1}
-   testParam "${DESTROY}" "destroy"
+   local ARGS=$*
 
-   if [[ "${DESTROY}" == '--destroy' ]]; then
+   if [[ ${ARGS} == *"--destroy"* ]]; then
       local destroy_str="-v --rmi local --remove-orphans"
    fi
 
@@ -50,12 +48,15 @@ dockerStop () {
    docker compose down ${destroy_str}
 
    # Docker up common
-   docker compose -f "${dc_common_lib_path}" down
+   if [[ ${ARGS} == *"--full"* ]]; then
+      # shellcheck disable=SC2086
+      docker compose -f "${dc_common_lib_path}" --env-file .env down ${destroy_str}
+   fi
 }
 
 # restart docker
 dockerRestart () {
-    dockerStop "${1}" && dockerStart "${1}"
+    dockerStop "$@" && dockerStart "${1}"
 }
 
 # Test et récupère le dossier du projet COMMON
@@ -63,7 +64,7 @@ dockerGetCommonPath () {
    dc_common_lib_path="${APP__COMMON_LIB_PATH/#\~/$HOME}/docker-compose.yml"
 
    if [ ! -f "${dc_common_lib_path}" ]; then
-      displayError "Common files not found. Clone git project and check your project configuration (.env or .env.local)."
+      displayError "Common files not found. Check your project configuration (.env or .env.local)."
       exit 1
    fi
 }
