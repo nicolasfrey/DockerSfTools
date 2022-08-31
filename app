@@ -168,9 +168,11 @@ phpunit () {
    if [ "$1" == 'init' ]; then
          dockerRuncli bin/console doctrine:database:create --env=test --if-not-exists || displayError
    elif [[ ${ARGS} == *"--coverage"* ]]; then
-      dockerRuncli phpdbg -qrr ./bin/phpunit "${ARGS/--coverage/}"
+      # shellcheck disable=SC2086
+      dockerRuncli phpdbg -qrr ./bin/phpunit ${ARGS/--coverage/}
    else
-      dockerRuncli ./bin/phpunit --no-coverage "${ARGS}"
+      # shellcheck disable=SC2086
+      dockerRuncli ./bin/phpunit --no-coverage ${ARGS}
    fi
 }
 
