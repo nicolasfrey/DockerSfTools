@@ -4,7 +4,7 @@ BRANCHE='master'
 
 # Version
 packageVersion () {
-   VERSION='3.2.2'
+   VERSION='3.2.3'
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
