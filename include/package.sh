@@ -4,7 +4,7 @@ BRANCHE='master'
 
 # Version
 packageVersion () {
-   VERSION='3.2.1'
+   VERSION='3.2.2'
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
    echo ""
@@ -19,7 +19,7 @@ packageSelfUpdate () {
 
 packageDestroy() {
    echo "----> Remove githooks"
-      rm .git/hooks/pre-commit .git/hooks/commit-msg
+   rm .git/hooks/pre-commit .git/hooks/commit-msg
    echo " [OK] Githooks removed"
 }
 
@@ -51,8 +51,8 @@ packageAddGithooks () {
    PRE_COMMIT_EXISTS=$([ -e .git/hooks/pre-commit ] && echo 1 || echo 0)
    COMMIT_MSG_EXISTS=$([ -e .git/hooks/commit-msg ] && echo 1 || echo 0)
 
-   cp -f bin/config/pre-commit .git/hooks/pre-commit
-   cp -f bin/config/commit-msg .git/hooks/commit-msg
+   cp -f bin/config/{pre-commit,commit-msg} .git/hooks/
+   chmod +x .git/hooks/{pre-commit,commit-msg}
 
    if [ "$PRE_COMMIT_EXISTS" = 0 ]; then
       echo "Pre-commit git hook is installed!"
