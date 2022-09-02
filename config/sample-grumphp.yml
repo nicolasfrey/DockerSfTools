@@ -6,8 +6,8 @@ grumphp:
     variables:
       GRUMPHP_GIT_REPOSITORY_DIR: "/home/wwwroot/.git"
       GRUMPHP_PROJECT_DIR: "/home/wwwroot/app"
-      GRUMPHP_COMPOSER_DIR: "/root/.composer"
-      GRUMPHP_BIN_DIR: "/root/.composer/vendor/bin"
+      GRUMPHP_COMPOSER_DIR: "/home/docker/.composer"
+      GRUMPHP_BIN_DIR: "/home/docker/.composer/vendor/bin"
   git_hook_variables:
     EXEC_GRUMPHP_COMMAND: ['docker compose', 'run', '--rm', 'phpcli']
     ENV:
