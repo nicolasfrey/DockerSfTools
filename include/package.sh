@@ -4,10 +4,32 @@ BRANCHE='master'
 
 # Version
 packageVersion () {
-   VERSION='3.2.3'
    echo ""
-   echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
+   echo -e "\e[34mbin/app\e[39m version \e[33m$(packageGetVersion)\e[39m"
    echo ""
+
+   if packageIsUpToDate; then
+      echo -e "\e[31mUne nouvelle version est disponible (\e[33m$(packageGetGitVersion)\e[31m). Pensez à mettre à jour votre version avec la commande \"\e[39mbin/app selfupdate\e[31m\"\e[39m\n"
+   fi
+}
+
+packageGetVersion () {
+   cat ./bin/VERSION
+}
+
+packageGetGitVersion () {
+   curl -s "https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/VERSION"
+}
+
+packageIsUpToDate () {
+   GIT_VERSION=$(versionToInt "$(packageGetGitVersion)")
+   LOCAL_VERSION=$(versionToInt "$(packageGetVersion)")
+
+   if [ "$LOCAL_VERSION" \< "$GIT_VERSION" ]; then
+      return 0
+   else
+      return 1
+   fi
 }
 
 packageSelfUpdate () {
@@ -51,8 +73,8 @@ packageAddGithooks () {
    PRE_COMMIT_EXISTS=$([ -e .git/hooks/pre-commit ] && echo 1 || echo 0)
    COMMIT_MSG_EXISTS=$([ -e .git/hooks/commit-msg ] && echo 1 || echo 0)
 
-   cp -f bin/config/{pre-commit,commit-msg} .git/hooks/
-   chmod +x .git/hooks/{pre-commit,commit-msg}
+   cp -f bin/config/pre-commit .git/hooks/pre-commit
+   cp -f bin/config/commit-msg .git/hooks/commit-msg
 
    if [ "$PRE_COMMIT_EXISTS" = 0 ]; then
       echo "Pre-commit git hook is installed!"
