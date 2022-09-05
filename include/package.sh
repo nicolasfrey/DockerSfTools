@@ -4,9 +4,16 @@ BRANCHE='master'
 
 # Version
 packageVersion () {
-   VERSION='3.2.3'
+   VERSION="$(< ./bin/VERSION)"
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
+   echo ""
+}
+
+packageGitVersion () {
+   VERSION="$(< curl https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/master/VERSION)"
+   echo ""
+   echo -e "\e[34mbin/app\e[39m git version \e[33m${VERSION}\e[39m"
    echo ""
 }
 
@@ -51,8 +58,8 @@ packageAddGithooks () {
    PRE_COMMIT_EXISTS=$([ -e .git/hooks/pre-commit ] && echo 1 || echo 0)
    COMMIT_MSG_EXISTS=$([ -e .git/hooks/commit-msg ] && echo 1 || echo 0)
 
-   cp -f bin/config/{pre-commit,commit-msg} .git/hooks/
-   chmod +x .git/hooks/{pre-commit,commit-msg}
+   cp -f bin/config/pre-commit .git/hooks/pre-commit
+   cp -f bin/config/commit-msg .git/hooks/commit-msg
 
    if [ "$PRE_COMMIT_EXISTS" = 0 ]; then
       echo "Pre-commit git hook is installed!"
