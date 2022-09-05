@@ -44,8 +44,18 @@ dockerStop () {
       local destroy_str="-v --rmi local --remove-orphans"
    fi
 
-   # shellcheck disable=SC2086
-   docker compose down ${destroy_str}
+   if [[ ${ARGS} == *"--all"* ]]; then
+      docker_compose_yml_list=$(docker compose ls | grep -v "/bin/common/" | sed "1 d" | awk '{print $3}')
+
+      for docker_compose_yml in $docker_compose_yml_list
+      do
+         # shellcheck disable=SC2086
+         docker compose -f "${docker_compose_yml}" down ${destroy_str}
+      done
+   else
+      # shellcheck disable=SC2086
+      docker compose down ${destroy_str}
+   fi
 
    # Docker up common
    if [[ ${ARGS} == *"--full"* ]]; then

@@ -230,7 +230,7 @@ usage () {
     destroy                                        Remove all the project Docker containers with their volumes
 
     start --force-recreate                         Start project
-    stop --destroy --full                          Stop project. Add --destroy for remove images and orphans. Add --full for stop common containers.
+    stop --destroy --full --all                    Stop project. Add --destroy for remove images and orphans. Add --full for stop common containers. Add --all for stop ALL DOCKER COMPOSE project.
     restart --full                                 Restart project. Add --full for restart common containers.
 
     composer                                       Use Composer inside the app container
