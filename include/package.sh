@@ -18,8 +18,7 @@ packageGetVersion () {
 }
 
 packageGetGitVersion () {
-   #curl -s https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/master/VERSION
-   curl -s https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/feature/uptodate/VERSION
+   curl -s "https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/VERSION"
 }
 
 packageIsUpToDate () {
