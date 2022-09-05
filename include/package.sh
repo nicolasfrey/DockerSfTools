@@ -4,17 +4,33 @@ BRANCHE='master'
 
 # Version
 packageVersion () {
-   VERSION="$(< ./bin/VERSION)"
    echo ""
-   echo -e "\e[34mbin/app\e[39m version \e[33m${VERSION}\e[39m"
+   echo -e "\e[34mbin/app\e[39m version \e[33m$(packageGetVersion)\e[39m"
    echo ""
+
+   if packageIsUpToDate; then
+      echo -e "\e[31mUne nouvelle version est disponible (\e[33m$(packageGetGitVersion)\e[31m). Pensez à mettre à jour votre version avec la commande \"\e[39mbin/app selfupdate\e[31m\"\e[39m\n"
+   fi
 }
 
-packageGitVersion () {
-   VERSION="$(< curl https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/master/VERSION)"
-   echo ""
-   echo -e "\e[34mbin/app\e[39m git version \e[33m${VERSION}\e[39m"
-   echo ""
+packageGetVersion () {
+   cat ./bin/VERSION
+}
+
+packageGetGitVersion () {
+   #curl -s https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/master/VERSION
+   curl -s https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/feature/uptodate/VERSION
+}
+
+packageIsUpToDate () {
+   GIT_VERSION=$(versionToInt "$(packageGetGitVersion)")
+   LOCAL_VERSION=$(versionToInt "$(packageGetVersion)")
+
+   if [ "$LOCAL_VERSION" \< "$GIT_VERSION" ]; then
+      return 0
+   else
+      return 1
+   fi
 }
 
 packageSelfUpdate () {

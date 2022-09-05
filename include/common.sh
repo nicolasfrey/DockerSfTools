@@ -49,9 +49,9 @@ dotenv () {
 }
 
 isDosFile () {
-    if [[ -f $1 ]]; then
-       [[ $(dos2unix < $1 | cmp - $1 | wc -c) -gt 0 ]]
-    fi
+   if [[ -f $1 ]]; then
+      [[ $(dos2unix < $1 | cmp - $1 | wc -c) -gt 0 ]]
+   fi
 }
 
 isWeb () {
@@ -72,4 +72,11 @@ testParam () {
       echo -e "\e[49m"
       exit
    fi
+}
+
+versionToInt() {
+    local IFS=.
+    parts=($1)
+    let val=1000000*parts[0]+1000*parts[1]+parts[2]
+    echo $val
 }
