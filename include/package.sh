@@ -8,9 +8,7 @@ packageVersion () {
    echo -e "\e[34mbin/app\e[39m version \e[33m$(packageGetVersion)\e[39m"
    echo ""
 
-   if packageIsUpToDate; then
-      echo -e "\e[31mUne nouvelle version est disponible (\e[33m$(packageGetGitVersion)\e[31m). Pensez à mettre à jour votre version avec la commande \"\e[39mbin/app selfupdate\e[31m\"\e[39m\n"
-   fi
+   packageCheckIfUpToDate
 }
 
 packageGetVersion () {
@@ -26,9 +24,15 @@ packageIsUpToDate () {
    LOCAL_VERSION=$(versionToInt "$(packageGetVersion)")
 
    if [ "$LOCAL_VERSION" \< "$GIT_VERSION" ]; then
-      return 0
-   else
-      return 1
+      echo -e "\e[31mUne nouvelle version est disponible (\e[33m$(packageGetGitVersion)\e[31m). Pensez à mettre à jour votre version avec la commande \"\e[39mbin/app selfupdate\e[31m\"\e[39m\n"
+   fi
+}
+
+packageCheckIfUpToDate() {
+   [ -f "$FILE" ]; touch ./bin/.last_check_version
+
+   if [ "$(find ./bin -name '.last_check_version' -mtime +7)" ]; then
+      packageIsUpToDate
    fi
 }
 

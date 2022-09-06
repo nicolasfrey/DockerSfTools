@@ -270,6 +270,9 @@ main () {
    # Common project
    dockerGetCommonPath
 
+   # Check if uptodate
+   packageCheckIfUpToDate
+
    # Get current user/group
    USER='docker'
    GROUP='docker'
