@@ -58,7 +58,7 @@ dockerStop () {
    fi
 
    # Docker up common
-   if [[ ${ARGS} == *"--full"* ]]; then
+   if [[ ${ARGS} == *"--full"* || ${ARGS} == *"--all"* ]]; then
       # shellcheck disable=SC2086
       docker compose -f "${dc_common_lib_path}" --env-file .env down ${destroy_str}
    fi
