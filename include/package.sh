@@ -8,7 +8,7 @@ packageVersion () {
    echo -e "\e[34mbin/app\e[39m version \e[33m$(packageGetVersion)\e[39m"
    echo ""
 
-   packageCheckIfUpToDate
+   packageIsUpToDate
 }
 
 packageGetVersion () {
