@@ -101,18 +101,18 @@ update () {
 
    echo ""
 
-   echo "----> Install dependency"
-   dockerRuncli composer install || displayError
-   echo " [OK] Dependency installed"
-
-   echo ""
-
    if isWeb; then
        echo "----> Create directories"
        systemCreateFolder "${APP__APPLICATION_FOLDER}"
        echo " [OK] Directories created"
        echo ""
    fi
+
+   echo ""
+
+   echo "----> Install dependency"
+   dockerRuncli composer install || displayError
+   echo " [OK] Dependency installed"
 
    echo ""
 
