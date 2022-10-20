@@ -50,3 +50,48 @@ systemFileload () {
    dockerRunBash "chmod 777 public/upload -R"
    echo " [OK] Change permissions"
 }
+
+systemInitFiles() {
+   local ARGS=$*
+
+   declare CONTENT
+   declare SRC
+   declare SRC_FORMATTED
+   declare DEST
+
+   CONTENT=$(echo "${APP__INIT_FILESYSTEM}" | tr , ' ')
+   declare -A ARR="(${CONTENT})"
+
+   if [[ ${#ARR[@]} == 0 ]]; then
+     echo "No files to process"
+   fi
+
+   for key in "${!ARR[@]}"; do
+      SRC="${APP__ROOT_PATH}/${key}"
+      DEST="${APP__ROOT_PATH}/${ARR[${key}]}"
+
+      if [[ ${ARGS} == *"--reset"* ]]; then
+         if [[ -d "${DEST}" || -f "${DEST}" ]]; then
+            rm -Rf "${DEST}"
+         fi
+      fi;
+
+      SRC_FORMATTED=$(echo "${SRC}" | tr -d "*")
+
+      if [[ ! -d "${SRC_FORMATTED}" && ! -f "${SRC_FORMATTED}" ]]; then
+         echo "Path ${SRC} not found"
+         exit 1
+      fi
+
+      if [[ -d "${SRC_FORMATTED}" ]]; then
+         mkdir -p "${DEST}"
+         echo "Copy ${SRC} in ${DEST}"
+         # shellcheck disable=SC2086
+         cp -r ${SRC} ${DEST}
+      else
+         echo "Copy ${SRC} in ${DEST}"
+         # shellcheck disable=SC2086
+         cp ${SRC} ${DEST}
+      fi
+   done
+}
