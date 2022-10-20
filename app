@@ -125,6 +125,12 @@ update () {
    echo "----> Load fixture"
    commonLoadFixtures
    echo " [OK] Fixture loaded"
+
+   echo ""
+
+   echo "---> Initialize files system"
+   systemInitFiles
+   echo " [OK] Files initialized"
 }
 
 # remove containers, volumes and local images for this project
@@ -219,6 +225,10 @@ sflogs () {
     dockerRunBash "tail -f var/log/dev.log"
 }
 
+fileinit () {
+    systemInitFiles "$@"
+}
+
 usage () {
     echo "usage: bin/app COMMAND [ARGUMENTS]
 
@@ -230,7 +240,8 @@ usage () {
     destroy                                        Remove all the project Docker containers with their volumes
 
     start --force-recreate                         Start project
-    stop --destroy --full --all                    Stop project. Add --destroy for remove images and orphans. Add --full for stop common containers. Add --all for stop ALL DOCKER COMPOSE project.
+    stop --destroy --full --all                    Stop project. Add --destroy for remove images and orphans.
+                                                   Add --full for stop common containers. Add --all for stop ALL DOCKER COMPOSE project.
     restart --full                                 Restart project. Add --full for restart common containers.
 
     composer                                       Use Composer inside the app container
@@ -245,6 +256,7 @@ usage () {
     dbreload                                       Update schema and reload fixture
     dbload <PROD|STAGING> --ignore-excludes        Load choose environment DB into localhost
     fileload <PROD|STAGING>                        Load choose environment public files into local
+    fileinit --reset                               Initialize files project. Add --reset for reset folder before.
 
     backup                                         Backup database in .docker/postgres/YmdHi.backup.gz
     restore <filename|latest>                      Restore database
@@ -259,7 +271,7 @@ main () {
       exit 0
    fi
 
-   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|rector|backup|restore|dbload|fileload|dbreload|sflogs|grumphp|selfupdate)$ ]]; then
+   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|rector|backup|restore|dbload|fileload|dbreload|sflogs|grumphp|selfupdate|fileinit)$ ]]; then
       echo "$1 is not a supported command"
       exit 1
    fi
