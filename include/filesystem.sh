@@ -51,7 +51,7 @@ systemFileload () {
    echo " [OK] Change permissions"
 }
 
-systemInitFiles() {
+systemFilesInit() {
    local ARGS=$*
 
    declare CONTENT
