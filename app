@@ -129,7 +129,7 @@ update () {
    echo ""
 
    echo "---> Initialize files system"
-   systemFilesInit
+   systemFileInit
    echo " [OK] Files initialized"
 }
 
@@ -226,7 +226,7 @@ sflogs () {
 }
 
 fileinit () {
-    systemFilesInit "$@"
+    systemFileInit "$@"
 }
 
 usage () {
