@@ -1,13 +1,16 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 /**
  * https://github.com/FriendsOfPHP/PHP-CS-Fixer
- * Sample: https://mlocati.github.io/php-cs-fixer-configurator/#version:2.16
+ * Sample: https://mlocati.github.io/php-cs-fixer-configurator/#version:2.16.
  */
 $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__)
     ->exclude('var')
+    ->notPath([
+        'config/bootstrap.php',
+        'public/index.php',
+    ])
 ;
 
 $config = new PhpCsFixer\Config();
@@ -36,14 +39,14 @@ $config
         'backtick_to_shell_exec' => true,
         'method_chaining_indentation' => false,
         'single_import_per_statement' => false,
-        //'braces' => [ 'allow_single_line_closure' => true, 'position_after_control_structures' => 'next', 'position_after_functions_and_oop_constructs' => 'same' ],
-        'concat_space' => [ 'spacing' => 'one'],
+        // 'braces' => [ 'allow_single_line_closure' => true, 'position_after_control_structures' => 'next', 'position_after_functions_and_oop_constructs' => 'same' ],
+        'concat_space' => ['spacing' => 'one'],
         'array_syntax' => ['syntax' => 'short'],
 
         'blank_line_after_opening_tag' => false,
         'linebreak_after_opening_tag' => false,
-        //'no_blank_lines_after_class_opening' => true,
-
+        // 'no_blank_lines_after_class_opening' => true,
+        'php_unit_strict'                        => false
     ])
     ->setRiskyAllowed(true)
     ->setFinder($finder)
