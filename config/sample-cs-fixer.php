@@ -46,6 +46,7 @@ $config
         'blank_line_after_opening_tag' => false,
         'linebreak_after_opening_tag' => false,
         // 'no_blank_lines_after_class_opening' => true,
+        'php_unit_strict'                        => false
     ])
     ->setRiskyAllowed(true)
     ->setFinder($finder)
