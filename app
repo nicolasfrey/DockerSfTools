@@ -95,8 +95,8 @@ update () {
    echo ""
 
    echo "----> Set executable"
-   ls -d -1 bin/* app/bin/*
-   chmod u+x bin/* app/bin/*
+   ls -d -1 bin/app app/bin/*
+   chmod u+x bin/app app/bin/*
    echo " [OK] Set executable"
 
    echo ""
