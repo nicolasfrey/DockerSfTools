@@ -125,12 +125,6 @@ update () {
    echo "----> Load fixture"
    commonLoadFixtures
    echo " [OK] Fixture loaded"
-
-   echo ""
-
-   echo "---> Initialize files system"
-   systemFileInit
-   echo " [OK] Files initialized"
 }
 
 # remove containers, volumes and local images for this project
@@ -225,10 +219,6 @@ sflogs () {
     dockerRunBash "tail -f var/log/dev.log"
 }
 
-fileinit () {
-    systemFileInit "$@"
-}
-
 usage () {
     echo "usage: bin/app COMMAND [ARGUMENTS]
 
@@ -271,7 +261,7 @@ main () {
       exit 0
    fi
 
-   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|rector|backup|restore|dbload|fileload|dbreload|sflogs|grumphp|selfupdate|fileinit)$ ]]; then
+   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|rector|backup|restore|dbload|fileload|dbreload|sflogs|grumphp|selfupdate)$ ]]; then
       echo "$1 is not a supported command"
       exit 1
    fi
