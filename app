@@ -126,6 +126,13 @@ update () {
    echo "----> Load fixture"
    commonLoadFixtures
    echo " [OK] Fixture loaded"
+
+   if hasJWT; then
+      echo ""
+      echo "----> Generate key-pair"
+      dockerRuncli bin/console lexik:jwt:generate-keypair --skip-if-exists
+      echo " [OK] Key-pair generated"
+   fi
 }
 
 # remove containers, volumes and local images for this project
