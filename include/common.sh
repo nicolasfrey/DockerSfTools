@@ -84,6 +84,14 @@ isWeb () {
    fi
 }
 
+hasJWT () {
+   if grep -q "lexik/jwt-authentication-bundle" "app/composer.json"; then
+      return 0
+   else
+      return 1
+   fi
+}
+
 hasFixture () {
    if grep -q "doctrine/doctrine-fixtures-bundle" "app/composer.json"; then
       return 0
