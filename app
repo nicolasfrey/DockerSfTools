@@ -7,6 +7,7 @@ source "$(dirname "$0")/include/database.sh"
 source "$(dirname "$0")/include/postgres.sh"
 source "$(dirname "$0")/include/mongo.sh"
 source "$(dirname "$0")/include/redis.sh"
+source "$(dirname "$0")/include/sqlite.sh"
 source "$(dirname "$0")/include/filesystem.sh"
 
 # Start docker project
