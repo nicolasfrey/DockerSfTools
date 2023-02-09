@@ -19,11 +19,15 @@ sqliteInitDB () {
 }
 
 sqliteDBReload () {
-   displayMessage "${FUNCNAME[0]}, Not implemented yet"
+   systemCreateFolder "${APP__APPLICATION_FOLDER}"
+   sqliteInitDB
+   sqliteLoadFixtures
 }
 
 sqliteLoadFixtures () {
-   displayMessage "${FUNCNAME[0]}, Not implemented yet"
+   if hasFixture; then
+      dockerRuncli bin/console doctrine:fixtures:load -n --purge-with-truncate  || displayError
+   fi
 }
 
 sqliteDBLoad () {
