@@ -13,7 +13,9 @@ postgresInitDB () {
 }
 
 postgresLoadFixtures () {
-   dockerRuncli bin/console doctrine:fixtures:load -n --purge-with-truncate  || displayError
+   if hasFixture; then
+      dockerRuncli bin/console doctrine:fixtures:load -n --purge-with-truncate  || displayError
+   fi
 }
 
 postgresDBLoad () {
