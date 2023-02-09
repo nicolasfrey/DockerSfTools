@@ -14,6 +14,7 @@ sqliteInitDB () {
       do
          dockerRuncli bin/console doctrine:database:drop -f --connection=${DB}
          dockerRuncli bin/console doctrine:database:create --connection=${DB} || displayError
+         dockerRuncli bin/console doctrine:schema:update --em=${DB} --force || displayError
       done
    fi
 }
