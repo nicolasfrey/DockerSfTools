@@ -76,31 +76,7 @@ postgresDBLoad () {
    echo " [OK] Backup ${SOURCE} database"
    echo ""
 
-   echo "----> Clean localhost database"
-
-   local SEQUENCES
-   SEQUENCES=$(docker compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(sequence_schema || '.\"' || sequence_name, '\",') FROM information_schema.sequences where sequence_catalog = '${APP__PSQL_DATABASE}'")
-   if [[ "${SEQUENCES}" = *[!\ ]* ]]; then
-      echo "Dropping sequences:${SEQUENCES}"
-      docker compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP SEQUENCE IF EXISTS ${SEQUENCES} CASCADE"
-   fi
-
-   local VIEWS
-   VIEWS=$(docker compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(table_schema || '.\"' || table_name || '\"', ',') FROM information_schema.tables where table_catalog = '${APP__PSQL_DATABASE}' AND table_schema not in('pg_catalog', 'information_schema') AND table_type='VIEW'")
-   if [[ "${VIEWS}" = *[!\ ]* ]]; then
-      echo "Dropping views:${VIEWS}"
-      docker compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP VIEW IF EXISTS ${VIEWS} CASCADE"
-   fi
-
-   local BASETBLS
-   BASETBLS=$(docker compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" -t --command "SELECT string_agg(table_schema || '.\"' || table_name || '\"', ',') FROM information_schema.tables where table_catalog = '${APP__PSQL_DATABASE}' AND table_schema not in('pg_catalog', 'information_schema') AND table_type='BASE TABLE'")
-   if [[ "${BASETBLS}" = *[!\ ]* ]]; then
-      echo "Dropping tables:${BASETBLS}"
-      docker compose exec postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" --command "DROP TABLE IF EXISTS ${BASETBLS} CASCADE"
-   fi
-
-   echo " [OK] Clean localhost database"
-   echo ""
+   postgresCleanDB
 
    echo "----> Restore database to localhost"
    docker compose exec postgres pg_restore --format=c --verbose --clean --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${BACKUP_FILE}
@@ -143,6 +119,15 @@ postgresRestore () {
       exit 0
    fi
 
+   postgresCleanDB
+
    echo "Restore \"${FILENAME}\" backup"
-   docker compose exec postgres pg_restore --format=c --verbose --clean --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${FILENAME}
+   docker compose exec postgres pg_restore --format=c --verbose --no-privileges --no-owner --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" /var/backup/${FILENAME}
+}
+
+postgresCleanDB () {
+   echo "----> Clean local database"
+   docker compose exec -T postgres psql --host=localhost --username="${APP__PSQL_USER}" --dbname="${APP__PSQL_DATABASE}" < bin/db/postgres/clean.sql
+   echo " [OK] Clean local database"
+   echo ""
 }
