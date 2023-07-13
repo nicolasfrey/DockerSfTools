@@ -139,7 +139,18 @@ update () {
 destroy () {
    if isWeb; then
        echo "----> Remove directory"
-       dockerRunBash "rm -rf public/upload public/build vendor node_modules var bin/.phpunit"
+
+       if [[ "${APP__APPLICATION_FOLDER}" = *[!\ ]* ]]; then
+             local FOLDERS
+             FOLDERS=$(echo "${APP__APPLICATION_FOLDER}" | tr ",; " "\n")
+
+             for FOLDER in $FOLDERS
+             do
+                dockerRunBash "rm -rf ./${FOLDER}"
+             done
+       fi
+
+       dockerRunBash "rm -rf public/build vendor node_modules var bin/.phpunit"
        rm -f .docker/oracle/init/.cache
        echo " [OK] Directories removed"
        echo ""
