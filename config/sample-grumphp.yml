@@ -27,12 +27,21 @@ grumphp:
       max_subject_width: 100
 #      matchers:
 #        Must contain JIRA issue number: /^(JIRA-([0-9]*)|NO-JIRA)/
-    phplint: ~
+
+    phpstan:
+      configuration: '/home/wwwroot/app/phpstan.neon'
+
     phpcsfixer:
       config: '/home/wwwroot/app/.php-cs-fixer.dist.php'
+
+    rector:
+      config: '/home/wwwroot/app/rector.php'
+
     jsonlint:
       detect_key_conflicts: true
+
     yamllint: ~
+
     twigcs:
       path: '/home/wwwroot/app/templates'
       severity: 'warning'

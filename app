@@ -210,23 +210,15 @@ grumphp () {
 }
 
 rector () {
-   declare ARGS="$*"
+   dockerRuncli grumphp --config=../grumphp.yml run --tasks=rector
+}
 
-   dockerRuncli composer info |grep rector/rector >/dev/null 2>&1 || dockerRuncli composer require rector/rector --dev
+phpcsfixer () {
+   dockerRuncli grumphp --config=../grumphp.yml run --tasks=phpcsfixer
+}
 
-   if dockerRuncli composer info|grep rector/rector >/dev/null 2>&1; then
-      if [[ -z $1 ]]; then
-         dockerRuncli vendor/bin/rector "--dry-run"
-      else
-         # shellcheck disable=SC2086
-         #docker compose run --rm -u "$USER":"$GROUP" phpcli vendor/bin/rector ${ARGS}
-         dockerRuncli vendor/bin/rector ${ARGS}
-      fi
-   else
-      echo ""
-      echo -e "\e[31mRector is not installed.\e[39m"
-      echo ""
-   fi
+phpstan () {
+   dockerRuncli grumphp --config=../grumphp.yml run --tasks=phpstan
 }
 
 fileload () {
@@ -260,7 +252,9 @@ usage () {
 
     phpunit <init...>                              Executes a phpUnit Tests. Add --coverage for coverage support. Init for create database
     grumphp <init|run...>                          Executes a GrumPHP task.
-    rector <process...>                            Executes Rector Code Style Checker. Default dry-run mode.
+    rector                                         Executes Rector Code Style Checker.
+    phpcsfixer                                     Executes phpCSFixer (PHP Coding Standards Fixer).
+    phpstan                                        Executes PHPStan - PHP Static Analysis Tool.
 
     dbreload                                       Update schema and reload fixture
     dbload <PROD|STAGING> --ignore-excludes        Load choose environment DB into localhost
@@ -280,7 +274,7 @@ main () {
       exit 0
    fi
 
-   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|phpcsf|rector|backup|restore|dbload|fileload|dbreload|sflogs|grumphp|selfupdate)$ ]]; then
+   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|grumphp|phpstan|phpcsfixer|rector|backup|restore|dbload|fileload|dbreload|sflogs|selfupdate)$ ]]; then
       echo "$1 is not a supported command"
       exit 1
    fi
