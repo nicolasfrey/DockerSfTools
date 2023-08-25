@@ -34,8 +34,7 @@ return static function (RectorConfig $rectorConfig): void {
         __DIR__ . '/tests',
     ]);
 
-    $parameters = $rectorConfig->parameters();
-    $parameters->set(Option::PHP_VERSION_FEATURES, PhpVersion::PHP_82);
+    $rectorConfig->phpVersion(PhpVersion::PHP_82);
 
     // register a single rule
     $rectorConfig->rules([
@@ -61,7 +60,7 @@ return static function (RectorConfig $rectorConfig): void {
         SymfonySetList::CONFIGS,
     ]);
 
-    $parameters->set(Option::SKIP, [
+    $rectorConfig->skip([
         __DIR__ . '/sys/Kernel.php',
         __DIR__ . '/public/index.php',
         __DIR__ . '/config/bootstrap.php',
@@ -78,4 +77,5 @@ return static function (RectorConfig $rectorConfig): void {
         FinalizePublicClassConstantRector::class,
         ReadOnlyPropertyRector::class,
     ]);
+
 };

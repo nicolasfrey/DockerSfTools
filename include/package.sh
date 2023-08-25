@@ -97,4 +97,6 @@ packageAddGithooks () {
 packageAddConfigFile () {
    [ -f grumphp.yml ] || cp -f bin/config/sample-grumphp.yml grumphp.yml
    [ -f app/.php-cs-fixer.dist.php ] || cp -f bin/config/sample-cs-fixer.php app/.php-cs-fixer.dist.php
+   [ -f app/rector.php ] || cp -f bin/config/sample-rector.php app/rector.php
+   [ -f app/phpstan.neon ] || cp -f bin/config/sample-phpstan.neon app/phpstan.neon
 }
