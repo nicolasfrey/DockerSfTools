@@ -10,6 +10,7 @@ $finder = PhpCsFixer\Finder::create()
     ->notPath([
         'config/bootstrap.php',
         'public/index.php',
+        'config/bundles.php',
     ])
 ;
 
