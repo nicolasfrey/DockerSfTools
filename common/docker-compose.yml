@@ -4,6 +4,10 @@ networks:
   nginx-proxy:
     external: true
 
+volumes:
+  prometheus:
+  grafana-storage:
+
 services:
 
   nginx-proxy:
@@ -25,5 +29,41 @@ services:
       DOCKER_MODS: linuxserver/mods:openssh-server-ssh-tunnel
     ports:
       - "2222:2222"
+    networks:
+      - nginx-proxy
+
+  prometheus:
+    image: ${ARTIFACTORY_PATH}docker/bitnami/prometheus:latest
+    environment:
+      - VIRTUAL_HOST=prometheus.local.gd
+      - VIRTUAL_PORT=9090
+    volumes:
+      - prometheus:/opt/bitnami/prometheus/data
+      - ../config/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+    networks:
+      - nginx-proxy
+
+  grafana:
+    image: ${ARTIFACTORY_PATH}docker/grafana/grafana:latest
+    environment:
+      - VIRTUAL_HOST=grafana.local.gd
+      - VIRTUAL_PORT=3000
+    volumes:
+      - ../config/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ../config/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ../config/grafana/dashboards/:/var/lib/grafana/dashboards/
+    networks:
+      - nginx-proxy
+
+  cadvisor:
+    image: ${ARTIFACTORY_PATH}docker/google/cadvisor:latest
+    restart: always
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8080:8080"
     networks:
       - nginx-proxy

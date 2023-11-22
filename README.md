@@ -21,3 +21,18 @@ Remove bin folder in your project directory and clone the repository. WARNING: c
 ````bash
 git clone --branch master https://github.com/nicolasfrey/DockerSfTools.git bin
 ````
+
+Prometheus php-fpm
+----------
+Add to your docker-compose.yaml the export service to format the fpm /status correctly for prometheus:
+
+````yaml
+  phpfpm-exporter:
+    image: ${ARTIFACTORY_PATH}/hipages/php-fpm_exporter
+    environment:
+      PHP_FPM_SCRAPE_URI: "tcp://phpfpm:9000/status"
+      PHP_FPM_LOG_LEVEL: "debug"
+    depends_on:
+      phpfpm:
+        condition: service_started
+````
