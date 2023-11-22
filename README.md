@@ -28,7 +28,7 @@ Add to your docker-compose.yaml the export service to format the fpm /status cor
 
 ````yaml
   phpfpm-exporter:
-    image: artifactory.groupe.pharmagest.com/docker/hipages/php-fpm_exporter
+    image: ${ARTIFACTORY_PATH}/hipages/php-fpm_exporter
     environment:
       PHP_FPM_SCRAPE_URI: "tcp://phpfpm:9000/status"
       PHP_FPM_LOG_LEVEL: "debug"
