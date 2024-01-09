@@ -36,3 +36,17 @@ Add to your docker-compose.yaml the export service to format the fpm /status cor
       phpfpm:
         condition: service_started
 ````
+
+Configuration Nginx
+----------
+Update your vhost and add this route:
+
+````
+location /metrics {
+        proxy_pass http://phpfpm-exporter:9253/metrics;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    } 
+````
