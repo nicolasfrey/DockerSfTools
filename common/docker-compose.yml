@@ -12,7 +12,6 @@ services:
 
   nginx-proxy:
     image: ${ARTIFACTORY_PATH}${REPOSITORY_PATH}nginx/nginx-proxy:latest
-    restart: 'always'
     ports:
       - "80:80"
     volumes:
@@ -57,7 +56,6 @@ services:
 
   cadvisor:
     image: ${ARTIFACTORY_PATH}docker/google/cadvisor:latest
-    restart: always
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
