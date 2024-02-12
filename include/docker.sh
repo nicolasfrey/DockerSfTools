@@ -70,7 +70,12 @@ dockerRestart () {
 }
 
 dockerKill () {
-   docker kill $(docker ps -q)
+   if [[ -n $(docker ps -q) ]]; then
+     docker kill $(docker ps -q)
+   else
+      displayMessage "No containers are currently running on this system."
+      exit 1
+   fi
 }
 
 # Test et récupère le dossier du projet COMMON
