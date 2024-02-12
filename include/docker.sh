@@ -69,6 +69,10 @@ dockerRestart () {
     dockerStop "$@" && dockerStart "${1}"
 }
 
+dockerKill () {
+   docker kill $(docker ps -q)
+}
+
 # Test et récupère le dossier du projet COMMON
 dockerGetCommonPath () {
    dc_common_lib_path="${APP__COMMON_LIB_PATH/#\~/$HOME}/docker-compose.yml"

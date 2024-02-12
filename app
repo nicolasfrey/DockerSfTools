@@ -20,6 +20,11 @@ stop () {
    dockerStop "$@"
 }
 
+# Kill docker project
+kill () {
+   dockerKill
+}
+
 # Restart docker project
 restart () {
    dockerRestart "$@"
@@ -243,6 +248,7 @@ usage () {
     start --force-recreate                         Start project
     stop --destroy --full --all                    Stop project. Add --destroy for remove images and orphans.
                                                    Add --full for stop common containers. Add --all for stop ALL DOCKER COMPOSE project.
+    kill                                           Kill all containers
     restart --full                                 Restart project. Add --full for restart common containers.
 
     composer                                       Use Composer inside the app container
@@ -274,7 +280,7 @@ main () {
       exit 0
    fi
 
-   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|bash|destroy|console|composer|php|phpunit|grumphp|phpstan|phpcsfixer|rector|backup|restore|dbload|fileload|dbreload|sflogs|selfupdate)$ ]]; then
+   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|kill|bash|destroy|console|composer|php|phpunit|grumphp|phpstan|phpcsfixer|rector|backup|restore|dbload|fileload|dbreload|sflogs|selfupdate)$ ]]; then
       echo "$1 is not a supported command"
       exit 1
    fi
