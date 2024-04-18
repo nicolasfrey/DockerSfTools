@@ -11,6 +11,7 @@ $finder = PhpCsFixer\Finder::create()
         'config/bootstrap.php',
         'public/index.php',
         'config/bundles.php',
+        'config/preload.php',
     ])
 ;
 
