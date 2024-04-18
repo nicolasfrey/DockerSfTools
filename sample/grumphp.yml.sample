@@ -1,8 +1,5 @@
 grumphp:
   environment:
-    ascii:
-      failed: failed.txt
-      succeeded: success.txt
     variables:
       GRUMPHP_GIT_REPOSITORY_DIR: "/home/wwwroot/.git"
       GRUMPHP_PROJECT_DIR: "/home/wwwroot/app"

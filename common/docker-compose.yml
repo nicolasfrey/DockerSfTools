@@ -1,5 +1,3 @@
-version: '3.7'
-
 networks:
   nginx-proxy:
     external: true
