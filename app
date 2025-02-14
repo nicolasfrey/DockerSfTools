@@ -120,17 +120,8 @@ update () {
    dockerRuncli composer install || displayError
    echo " [OK] Dependency installed"
 
-   echo ""
-
-   echo "----> Initialize database"
    commonInitDB
-   echo " [OK] Database initialized"
-
-   echo ""
-
-   echo "----> Load fixture"
    commonLoadFixtures
-   echo " [OK] Fixture loaded"
 
    if hasJWT; then
       echo ""

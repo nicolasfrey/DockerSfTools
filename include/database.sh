@@ -9,7 +9,10 @@ commonDBRun() {
 
          for DB in $DB_TYPE
          do
+            echo ""
+            echo "----> [${DB}] / ${COMMAND}"
             "${DB}""${COMMAND}" "${@:2}"
+            echo " [OK] [${DB}] / ${COMMAND}"
          done
       fi
 }
