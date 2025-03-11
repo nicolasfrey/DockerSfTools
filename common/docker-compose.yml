@@ -32,7 +32,7 @@ services:
   prometheus:
     image: ${ARTIFACTORY_PATH}docker/bitnami/prometheus:latest
     environment:
-      - VIRTUAL_HOST=prometheus.local.gd
+      - VIRTUAL_HOST=prometheus.nip.io
       - VIRTUAL_PORT=9090
     volumes:
       - prometheus:/opt/bitnami/prometheus/data
@@ -43,7 +43,7 @@ services:
   grafana:
     image: ${ARTIFACTORY_PATH}docker/grafana/grafana:latest
     environment:
-      - VIRTUAL_HOST=grafana.local.gd
+      - VIRTUAL_HOST=grafana.nip.io
       - VIRTUAL_PORT=3000
     volumes:
       - ../config/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
@@ -55,7 +55,7 @@ services:
   cadvisor:
     image: ${ARTIFACTORY_PATH}docker/google/cadvisor:latest
     environment:
-      - VIRTUAL_HOST=cadvisor.local.gd
+      - VIRTUAL_HOST=cadvisor.nip.io
       - VIRTUAL_PORT=8080
     volumes:
       - /:/rootfs:ro
