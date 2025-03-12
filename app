@@ -84,11 +84,11 @@ init () {
    echo ""
 
    displayMessage "  Project initialized successfully.
-      - HTTP: http://${APP__APP_NAME}.nip.io
-      - MailDev: http://${APP__APP_NAME}.maildev.nip.io
-      - Postgres via SSH: psql://${APP__PSQL_USER}:${APP__PSQL_PASSWORD}@${APP__APP_NAME}.postgres.nip.io:5432/${APP__PSQL_DATABASE}
-      - MongoDB via SSH: mongodb://${APP__MDB_USER}:${APP__MDB_PASSWORD}@${APP__APP_NAME}.mongodb.nip.io:27017/${APP__MDB_DATABASE}
-      - SSH (for tunnel): ssh://proxy:pass@ssh.nip.io:2222"
+      - HTTP: http://${APP__APP_NAME}.127x.me
+      - MailDev: http://${APP__APP_NAME}.maildev.127x.me
+      - Postgres via SSH: psql://${APP__PSQL_USER}:${APP__PSQL_PASSWORD}@${APP__APP_NAME}.postgres.127x.me:5432/${APP__PSQL_DATABASE}
+      - MongoDB via SSH: mongodb://${APP__MDB_USER}:${APP__MDB_PASSWORD}@${APP__APP_NAME}.mongodb.127x.me:27017/${APP__MDB_DATABASE}
+      - SSH (for tunnel): ssh://proxy:pass@ssh.127x.me:2222"
 }
 
 # update project
