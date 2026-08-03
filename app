@@ -9,6 +9,7 @@ source "$(dirname "$0")/include/mongo.sh"
 source "$(dirname "$0")/include/redis.sh"
 source "$(dirname "$0")/include/sqlite.sh"
 source "$(dirname "$0")/include/filesystem.sh"
+source "$(dirname "$0")/include/localdeps.sh"
 
 # Start docker project
 start () {
@@ -221,6 +222,22 @@ fileload () {
    systemFileload "$@"
 }
 
+localdep () {
+   if [[ -z $1 ]]; then
+      localdep_usage
+   else
+      local ACTION=$1
+      shift
+      case "$ACTION" in
+         list|ls) localdep_list ;;
+         status) localdep_status ;;
+         add) localdep_add "$@" ;;
+         rollback|end) localdep_rollback "$@" ;;
+         *) echo "Commande inconnue : $ACTION" ; localdep_usage ;;
+      esac
+   fi
+}
+
 # Return symfony logs
 sflogs () {
     dockerRunBash "tail -f var/log/dev.log"
@@ -262,6 +279,8 @@ usage () {
     restore <filename|latest>                      Restore database
 
     sflogs                                         Return sf logs.
+
+    localdep <list|add|rollback> [package]         Gère les dépendances locales (voir 'bin/app localdep').
     "
 }
 
@@ -271,7 +290,7 @@ main () {
       exit 0
    fi
 
-   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|kill|bash|destroy|console|composer|php|phpunit|grumphp|phpstan|phpcsfixer|rector|backup|restore|dbload|fileload|dbreload|sflogs|selfupdate)$ ]]; then
+   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|kill|bash|destroy|console|composer|php|phpunit|grumphp|phpstan|phpcsfixer|rector|backup|restore|dbload|fileload|dbreload|sflogs|selfupdate|localdep)$ ]]; then
       echo "$1 is not a supported command"
       exit 1
    fi
