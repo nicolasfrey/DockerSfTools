@@ -9,6 +9,9 @@
 #
 # Prérequis hôte : git, jq
 # Catalogue      : bin/localdeps.json                 ([{repo, package, path}, ...])
+#                  repo = chemin relatif (ex. welsitl/weltools.git), préfixé à l'exécution
+#                  par LOCALDEPS_GIT_BASE (défini dans le .env racine du projet) — évite
+#                  d'exposer le host Git interne dans le dépôt de l'outil.
 # État courant   : external/.localdeps.state.json     (dossier external/ gitignoré)
 # ------------------------------------------------------------------
 
@@ -171,10 +174,13 @@ localdep_add() {
     localdep_state_has "$package" && \
         displayError "'$package' est déjà en dépendance locale. Fais un 'bin/app localdep rollback $package' d'abord."
 
-    local repo path dir cj
-    repo=$(echo "$entry" | jq -r '.repo')
+    local base rel repo path dir cj
+    base=${APP__LOCALDEPS_GIT_BASE:-}
+    [[ -n "$base" ]] || displayError "Variable LOCALDEPS_GIT_BASE absente du .env racine du projet (ex. LOCALDEPS_GIT_BASE=ssh://git@bitbucket.exemple:7999)."
+    rel=$(echo "$entry" | jq -r '.repo')
+    repo="${base%/}/$rel"
     path=$(echo "$entry" | jq -r '.path')
-    dir="$LOCALDEPS_EXTERNAL_DIR/$(basename "$repo" .git)"
+    dir="$LOCALDEPS_EXTERNAL_DIR/$(basename "$rel" .git)"
     cj=$(composer_json)
 
     echo "== Activation de la dépendance locale $package (branche $branch) =="
