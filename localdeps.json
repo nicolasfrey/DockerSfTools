@@ -5,9 +5,9 @@
     "path": "../external/welauth/app"
   },
   {
-    "repo": "ssh://git@bitbucket.groupe.pharmagest.com:7999/welsitl/welhistory.git",
+    "repo": "ssh://git@bitbucket.groupe.pharmagest.com:7999/welsitl/welhistorytable.git",
     "package": "welcoop/welhistory",
-    "path": "../external/welhistory/app"
+    "path": "../external/welhistorytable/app"
   },
   {
     "repo": "ssh://git@bitbucket.groupe.pharmagest.com:7999/welsitl/wellock.git",
