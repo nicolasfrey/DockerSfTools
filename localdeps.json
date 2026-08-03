@@ -1,21 +1,21 @@
 [
   {
-    "repo": "ssh://git@bitbucket.groupe.pharmagest.com:7999/welsitl/welauth.git",
+    "repo": "welsitl/welauth.git",
     "package": "welcoop/welauth",
     "path": "../external/welauth/app"
   },
   {
-    "repo": "ssh://git@bitbucket.groupe.pharmagest.com:7999/welsitl/welhistorytable.git",
+    "repo": "welsitl/welhistorytable.git",
     "package": "welcoop/welhistory",
     "path": "../external/welhistorytable/app"
   },
   {
-    "repo": "ssh://git@bitbucket.groupe.pharmagest.com:7999/welsitl/wellock.git",
+    "repo": "welsitl/wellock.git",
     "package": "welcoop/wellock",
     "path": "../external/wellock/app"
   },
   {
-    "repo": "ssh://git@bitbucket.groupe.pharmagest.com:7999/welsitl/weltools.git",
+    "repo": "welsitl/weltools.git",
     "package": "welcoop/weltools",
     "path": "../external/weltools/app"
   }
