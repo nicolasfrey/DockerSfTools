@@ -34,7 +34,7 @@ dockerStart () {
 
    # Docker up common
    # shellcheck disable=SC2086
-   docker compose -f "${dc_common_lib_path}" --env-file .env up -d ${RECREATE} || displayError
+   docker compose -p common -f "${dc_common_lib_path}" --env-file .env up -d ${RECREATE} || displayError
 }
 
 dockerStop () {
@@ -60,7 +60,7 @@ dockerStop () {
    # Docker up common
    if [[ ${ARGS} == *"--full"* || ${ARGS} == *"--all"* ]]; then
       # shellcheck disable=SC2086
-      docker compose -f "${dc_common_lib_path}" --env-file .env down ${destroy_str}
+      docker compose -p common -f "${dc_common_lib_path}" --env-file .env down ${destroy_str}
    fi
 }
 
