@@ -6,7 +6,7 @@ displayError () {
    echo -e "\e[41m"
    echo -e "\n ${TEXT}"
    echo -e "\e[49m"
-   exit
+   exit 1
 }
 
 displayMessage () {
