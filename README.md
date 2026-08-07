@@ -22,6 +22,27 @@ Remove bin folder in your project directory and clone the repository. WARNING: c
 git clone --branch master https://github.com/nicolasfrey/DockerSfTools.git bin
 ````
 
+Post-init hook (project extension point)
+----------
+Any project can declare a post-initialisation step by adding an executable
+script at `tools/post-init.sh` (in the project itself, not in `bin/` —
+`bin/app selfupdate` wipes and re-clones that folder). `bin/app init` runs it
+automatically once the project is up; it can also be replayed on its own
+with `bin/app postinit`, without going through a full `init` (typical use
+case: a certificate that needs yearly renewal).
+
+Projects that declare no `tools/post-init.sh` are completely unaffected —
+nothing runs, nothing is printed. If the script exists:
+
+- if it isn't executable, `init`/`postinit` warn (telling you to
+  `chmod +x tools/post-init.sh`) and continue;
+- if there's no interactive terminal (CI, a piped invocation), the hook is
+  skipped with a message instead of hanging on a prompt nobody can answer;
+- setting `SKIP_POST_INIT=1` skips it explicitly;
+- if the hook fails, `init`/`postinit` warn but do **not** fail — a
+  developer without whatever the hook needs (vault access, an internal
+  service, …) must still end up with a working local stack.
+
 Prometheus php-fpm
 ----------
 Add to your docker-compose.yaml the export service to format the fpm /status correctly for prometheus:
