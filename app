@@ -84,6 +84,9 @@ init () {
    update
    echo ""
 
+   # Project-specific post-init hook (tools/post-init.sh), if any
+   postinit
+
    displayMessage "  Project initialized successfully.
       - HTTP: http://${APP__APP_NAME}.127x.me
       - MailDev: http://${APP__APP_NAME}.maildev.127x.me
@@ -177,6 +180,13 @@ selfupdate () {
    packageSelfUpdate
 }
 
+# run the project-specific post-init hook (tools/post-init.sh), if any — the
+# same step "init" runs automatically; use this to replay it later without a
+# full re-init (e.g. a certificate that needs yearly renewal)
+postinit () {
+   commonPostInit
+}
+
 # run phpUnit
 phpunit () {
    declare ARGS=$*
@@ -250,6 +260,10 @@ usage () {
 
     config --destroy                               Initialize bin/app, grumphp, phpCSFixer, githooks. Add --destroy for clean project
     init                                           Initialize project
+    postinit                                       Re-run the project's post-init hook (tools/post-init.sh), if any.
+                                                   Runs automatically at the end of init. Skips if the script is
+                                                   missing, not executable (with a warning), SKIP_POST_INIT=1 is
+                                                   set, or there is no interactive terminal.
     update                                         Update current project (Reload db, launch composer install)
     destroy                                        Remove all the project Docker containers with their volumes
 
@@ -290,7 +304,7 @@ main () {
       exit 0
    fi
 
-   if [[ ! $1 =~ ^(version|config|init|update|start|stop|restart|kill|bash|destroy|console|composer|php|phpunit|grumphp|phpstan|phpcsfixer|rector|backup|restore|dbload|fileload|dbreload|sflogs|selfupdate|localdep)$ ]]; then
+   if [[ ! $1 =~ ^(version|config|init|postinit|update|start|stop|restart|kill|bash|destroy|console|composer|php|phpunit|grumphp|phpstan|phpcsfixer|rector|backup|restore|dbload|fileload|dbreload|sflogs|selfupdate|localdep)$ ]]; then
       echo "$1 is not a supported command"
       exit 1
    fi

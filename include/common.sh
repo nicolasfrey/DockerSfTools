@@ -112,6 +112,50 @@ testParam () {
    fi
 }
 
+# ------------------------------------------------------------------
+# postInit — point d'extension : hook post-init spécifique au projet
+#
+# Convention over configuration : si le projet fournit un script exécutable
+# à ce chemin (dans le projet, PAS dans bin/ — "bin/app selfupdate" fait un
+# "rm -rf ./bin" puis recloné, donc rien de placé là ne survivrait), il est
+# lancé automatiquement en fin de "bin/app init", et peut être rejoué seul
+# via "bin/app postinit" (ex. renouvellement annuel d'un certificat, sans
+# repasser par un init complet).
+#
+# Absent : aucun effet, aucun message — tous les projets existants qui ne
+# déclarent rien restent strictement inchangés par ce mécanisme.
+# ------------------------------------------------------------------
+commonPostInit () {
+   local hook="tools/post-init.sh"
+
+   [[ -f "$hook" ]] || return 0
+
+   echo ""
+
+   if [[ -n "${SKIP_POST_INIT:-}" ]]; then
+      echo "----> Post-init hook skipped (SKIP_POST_INIT is set)"
+      return 0
+   fi
+
+   if [[ ! -t 0 ]]; then
+      echo "----> Post-init hook skipped (no interactive terminal available — re-run 'bin/app postinit' from a terminal later)"
+      return 0
+   fi
+
+   if [[ ! -x "$hook" ]]; then
+      displayWarning "Post-init hook found at $hook but is not executable — run 'chmod +x $hook' then re-run 'bin/app postinit'. Skipping for now."
+      return 0
+   fi
+
+   echo "----> Running post-init hook ($hook)"
+   if "$hook"; then
+      echo " [OK] Post-init hook completed"
+   else
+      local exitCode=$?
+      displayWarning "Post-init hook ($hook) failed (exit code $exitCode) — continuing, the local stack is otherwise usable. Re-run 'bin/app postinit' later."
+   fi
+}
+
 versionToInt() {
     local IFS=.
     parts=($1)
