@@ -1,6 +1,17 @@
-- name: 'default'
-  org_id: 1
-  folder: ''
-  type: 'file'
-  options:
-    path: '/var/lib/grafana/dashboards'
+# Format de provisionnement des tableaux de bord attendu depuis Grafana 5 : « apiVersion »
+# et « providers », en camelCase. Le fichier était resté à la liste nue avec « org_id » du
+# format d'origine, que Grafana tolérait sans rien provisionner — et sur laquelle la
+# version 13 déréférence un pointeur nul au démarrage.
+apiVersion: 1
+
+providers:
+  - name: 'default'
+    orgId: 1
+    folder: ''
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false
