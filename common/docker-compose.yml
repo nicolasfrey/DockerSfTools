@@ -3,7 +3,11 @@ networks:
     external: true
 
 volumes:
-  prometheus:
+  # Volume renommé au passage à l'image officielle : l'ancien contenait la base de
+  # Bitnami, appartenant à l'uid 1001, que prom/prometheus — qui tourne en 65534 — ne
+  # peut pas écrire. Un volume neuf est créé avec les bons droits ; l'ancien
+  # « <projet>_prometheus » peut être supprimé.
+  prometheus-data:
   grafana-storage:
 
 services:
@@ -30,13 +34,17 @@ services:
       - nginx-proxy
 
   prometheus:
-    image: ${ARTIFACTORY_PATH}docker/bitnami/prometheus:latest
+    # Image officielle : Bitnami a retiré ses dépôts publics de Docker Hub en 2025, et
+    # « bitnami/prometheus:latest » ne résout plus aucun manifeste — la pile commune
+    # échouait donc à chaque démarrage. Les chemins par défaut de l'image officielle
+    # diffèrent de ceux de Bitnami, d'où les deux montages ci-dessous.
+    image: ${ARTIFACTORY_PATH}docker/prom/prometheus:latest
     environment:
       - VIRTUAL_HOST=prometheus.127x.me
       - VIRTUAL_PORT=9090
     volumes:
-      - prometheus:/opt/bitnami/prometheus/data
-      - ../config/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+      - prometheus-data:/prometheus
+      - ../config/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - nginx-proxy
 
@@ -53,7 +61,11 @@ services:
       - nginx-proxy
 
   cadvisor:
-    image: ${ARTIFACTORY_PATH}docker/google/cadvisor:latest
+    # Tirée directement de gcr.io, sans passer par l'Artifactory : celui-ci ne mire que
+    # Docker Hub, où « google/cadvisor » est resté à la v0.33 de 2019 — le projet publie
+    # depuis sur gcr.io. Version épinglée, puisque l'image vient de l'extérieur : la relever
+    # est un geste volontaire, à faire en vérifiant que le conteneur reste « healthy ».
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
     environment:
       - VIRTUAL_HOST=cadvisor.127x.me
       - VIRTUAL_PORT=8080

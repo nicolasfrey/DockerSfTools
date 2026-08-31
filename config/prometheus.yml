@@ -2,9 +2,12 @@ global:
   scrape_interval: 10s
 
 scrape_configs:
+  # La cible est l'exporteur php-fpm, à ajouter au docker-compose du projet (cf. README) :
+  # php-fpm ne publie pas de format Prometheus, et nginx rendait 404 sur /metrics — cible
+  # perpétuellement en échec, et une ligne de log toutes les dix secondes dans chaque projet.
   - job_name: 'php-fpm'
     static_configs:
-      - targets: ['nginx:80']
+      - targets: ['phpfpm-exporter:9253']
 
   - job_name: 'cadvisor'
     static_configs:
