@@ -61,7 +61,11 @@ services:
       - nginx-proxy
 
   cadvisor:
-    image: ${ARTIFACTORY_PATH}docker/google/cadvisor:latest
+    # Tirée directement de gcr.io, sans passer par l'Artifactory : celui-ci ne mire que
+    # Docker Hub, où « google/cadvisor » est resté à la v0.33 de 2019 — le projet publie
+    # depuis sur gcr.io. Version épinglée, puisque l'image vient de l'extérieur : la relever
+    # est un geste volontaire, à faire en vérifiant que le conteneur reste « healthy ».
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
     environment:
       - VIRTUAL_HOST=cadvisor.127x.me
       - VIRTUAL_PORT=8080
