@@ -1,3 +1,13 @@
+> **Déprécié — ce dépôt n'est plus maintenu.**
+>
+> Le développement de DockerSfTools se poursuit sur un dépôt privé. La version 4.18.0 publiée ici
+> est une **version de relais** : elle reste pleinement fonctionnelle, et son `bin/app selfupdate`
+> conduit le projet vers le dépôt qui a pris la suite — accessible depuis le réseau de
+> l'organisation concernée, et authentifié.
+>
+> Si vous n'en faites pas partie, la 4.18.0 est la dernière version disponible et continue de
+> fonctionner. `DOCKERSFTOOLS_REPO=<url> bin/app selfupdate` permet de viser votre propre dépôt.
+
 About
 ------------------
 
