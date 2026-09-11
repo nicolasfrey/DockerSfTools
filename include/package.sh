@@ -2,13 +2,25 @@
 
 BRANCHE='master'
 
+# VERSION DE RELAIS — 4.18.0, terminale sur ce dépôt.
+#
+# DockerSfTools n'est plus développé ici. Cette version n'existe que pour conduire
+# les projets encore branchés sur ce dépôt vers celui qui a pris la suite, sans que
+# personne ait à éditer un fichier à la main.
+#
+# Concrètement : un `bin/app selfupdate` depuis une version antérieure atterrit ici,
+# et le `selfupdate` SUIVANT récupère la version courante depuis le dépôt de
+# destination. Deux commandes, rien à savoir.
+DOCKERSFTOOLS_REPO_DEFAULT='ssh://git@bitbucket.groupe.pharmagest.com:7999/welsitl/dockersftools.git'
+
 # Version
 packageVersion () {
    echo ""
    echo -e "\e[34mbin/app\e[39m version \e[33m$(packageGetVersion)\e[39m"
    echo ""
-
-   packageIsUpToDate
+   echo -e "\e[33mVersion de RELAIS.\e[39m DockerSfTools n'est plus distribué depuis GitHub."
+   echo -e "Lance \e[34mbin/app selfupdate\e[39m pour récupérer la version courante depuis le dépôt qui a pris la suite."
+   echo ""
 }
 
 packageGetVersion () {
@@ -19,13 +31,11 @@ packageGetGitVersion () {
    curl -s "https://raw.githubusercontent.com/nicolasfrey/DockerSfTools/${BRANCHE}/VERSION"
 }
 
+# Muette : ce dépôt est gelé, il n'annoncera plus jamais de nouvelle version. Continuer
+# à interroger GitHub ne ferait que comparer 4.18.0 à elle-même. C'est `packageVersion`
+# qui porte désormais le message, à chaque affichage et non une fois par semaine.
 packageIsUpToDate () {
-   GIT_VERSION=$(versionToInt "$(packageGetGitVersion)")
-   LOCAL_VERSION=$(versionToInt "$(packageGetVersion)")
-
-   if [ "$LOCAL_VERSION" \< "$GIT_VERSION" ]; then
-      echo -e "\e[31mUne nouvelle version est disponible (\e[33m$(packageGetGitVersion)\e[31m). Pensez à mettre à jour votre version avec la commande \"\e[39mbin/app selfupdate\e[31m\"\e[39m\n"
-   fi
+   return 0
 }
 
 packageCheckIfUpToDate() {
@@ -36,9 +46,36 @@ packageCheckIfUpToDate() {
    fi
 }
 
+# Conduit le projet vers le dépôt qui a pris la suite.
+#
+# On clone À CÔTÉ, puis on remplace. L'ordre inverse — `rm -rf ./bin` d'abord — laissait
+# le projet SANS outil quand le clone échouait, donc incapable de réessayer. C'était
+# tolérable tant que la source était un dépôt public toujours joignable ; la destination
+# demande un réseau d'entreprise et une authentification, donc l'échec devient courant.
+# C'est précisément ici qu'il ne faut pas perdre bin/.
 packageSelfUpdate () {
+   local url tmp
+   url="${DOCKERSFTOOLS_REPO:-$DOCKERSFTOOLS_REPO_DEFAULT}"
+   tmp="$(mktemp -d)" || return 1
+
+   echo "Récupération depuis $url"
+
+   if ! git clone --branch "${BRANCHE}" "$url" "$tmp/bin"; then
+      rm -rf "$tmp"
+      echo "" >&2
+      echo "Échec de la récupération — bin/ est laissé intact, rien n'est perdu." >&2
+      echo "Ce dépôt-ci ne distribue plus DockerSfTools : la suite vit sur un dépôt" >&2
+      echo "privé, qui demande d'être sur le réseau de l'organisation et authentifié." >&2
+      echo "Si tu n'en fais pas partie, cette version 4.18.0 est la dernière disponible" >&2
+      echo "et reste pleinement fonctionnelle." >&2
+      echo "" >&2
+      echo "Pour viser un autre dépôt : DOCKERSFTOOLS_REPO=<url> bin/app selfupdate" >&2
+      return 1
+   fi
+
    rm -rf ./bin
-   git clone --branch ${BRANCHE} https://github.com/nicolasfrey/DockerSfTools.git bin
+   mv "$tmp/bin" ./bin
+   rm -rf "$tmp"
    packageCleanDirectory
    bin/app version
 }
